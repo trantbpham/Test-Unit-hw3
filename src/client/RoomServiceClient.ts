@@ -1,4 +1,4 @@
-import axios, {AxiosInstance, AxiosResponse} from 'axios';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import assert from 'assert';
 import {
   ResponseEnvelope,
