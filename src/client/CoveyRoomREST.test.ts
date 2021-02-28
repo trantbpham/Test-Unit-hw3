@@ -48,6 +48,7 @@ describe('RoomServiceApiREST', () => {
         expect(roomWithName.coveyRoomID.toString).toContain(testConfiguration.toString);
       } catch (e) {
         // Do nothing
+        expect(e.name).toMatch('Error');
       }
     });
   });
