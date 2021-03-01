@@ -39,20 +39,38 @@ describe('RoomServiceApiREST', () => {
         apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true }),
       ]);
     
-      expect(createdRoom1.coveyRoomID).not.toStrictEqual(createdRoom2.coveyRoomID);
-      expect(createdRoom2.coveyRoomID).not.toStrictEqual('');
+      const room1Res = {
+        coveyRoomID: createdRoom1.coveyRoomID,
+        friendlyName: testConfiguration,
+      };
+
+      const room2Res = {
+        coveyRoomID: createdRoom2.coveyRoomID,
+        friendlyName: testConfiguration,
+      };
+
+      const roomList = await apiClient.listRooms();
+      expect(roomList.rooms).toContainEqual(room1Res);
+      expect(roomList.rooms).toContainEqual(room2Res);
     });
+
     it.each(ConfigureTest('CR2'))('Prohibits a blank friendlyName [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
-      try {
-        const roomWithName = await apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true });
-        if (testConfiguration === '') {
-          expect(roomWithName).toContain(testConfiguration);
-        }
-        expect(roomWithName.coveyRoomID.toString).toContain(testConfiguration);
-      } catch (e) {
-        // Do nothing
-        expect(e.name).toMatch('Error');
+      
+      if (testConfiguration !== 'No fault') {
+        expect(async () => {
+          await apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true });
+        }).toThrowError();
+      } else {
+        const room1 = await apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true });
+        
+        const room1Res = {
+          coveyRoomID: room1.coveyRoomID,
+          friendlyName: testConfiguration,
+        };
+  
+        const roomList = await apiClient.listRooms();
+        expect(roomList.rooms).toContainEqual(room1Res);
       }
     });
   });
