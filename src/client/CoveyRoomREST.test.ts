@@ -115,7 +115,19 @@ describe('RoomServiceApiREST', () => {
         apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true }),
       ]);
       
-      expect(createdRoom1.coveyRoomID).not.toBe(createdRoom2.coveyRoomID);
+      const room1Response = {
+        coveyRoomID: createdRoom1.coveyRoomID,
+        friendlyName: testConfiguration,
+      };
+      const room2Response = {
+        coveyRoomID: createdRoom2.coveyRoomID,
+        friendlyName: testConfiguration,
+      };
+
+      const allRooms = await apiClient.listRooms();
+
+      expect(allRooms.rooms).toContainEqual(room1Response);
+      expect(allRooms.rooms).toContainEqual(room2Response);
     });
   });
 
