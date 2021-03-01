@@ -39,7 +39,7 @@ describe('RoomServiceApiREST', () => {
         apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true }),
       ]);
     
-      expect(createdRoom1.coveyRoomID).not.toBe(createdRoom2.coveyRoomID);
+      expect(createdRoom1.coveyRoomID).not.toStrictEqual(createdRoom2.coveyRoomID);
     });
     it.each(ConfigureTest('CR2'))('Prohibits a blank friendlyName [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
