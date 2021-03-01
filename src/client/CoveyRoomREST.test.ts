@@ -197,56 +197,53 @@ describe('RoomServiceApiREST', () => {
     });
   });
 
-  // describe('CoveyRoomUpdateAPI', () => {
-  //   it.each(ConfigureTest('CPU'))('Checks the password before updating any values [%s]', async (testConfiguration: string) => {
-  //     StartTest(testConfiguration);
-  //     const createdRoom1 = await Promise.all([
-  //       apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true }),
-  //     ]);  
+  describe('CoveyRoomUpdateAPI', () => {
+    it.each(ConfigureTest('CPU'))('Checks the password before updating any values [%s]', async (testConfiguration: string) => {
+      StartTest(testConfiguration);
+       
+      const createdRoom1 = await apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true });
+
+      const room1Response = {
+        coveyRoomID: createdRoom1.coveyRoomID,
+        friendlyName: testConfiguration,
+      };
+
+      const updateRequest1 = {
+        coveyRoomID: createdRoom1.coveyRoomID,
+        coveyRoomPassword: createdRoom1.coveyRoomPassword,
+        friendlyName: testConfiguration,
+        isPubliclyListed: true,
+      };
       
-  //     const room1Response = {
-  //       coveyRoomID: createdRoom1.coveyRoomID,
-  //       friendlyName: testConfiguration,
-  //     };
+      expect(createdRoom1).toHaveProperty('coveyRoomPassword', createdRoom1.coveyRoomPassword);
 
-  //     const updateRequest1 = {
-  //       coveyRoomID: createdRoom1.coveyRoomID,
-  //       coveyRoomPassword: createdRoom1.coveyRoomPassword,
-  //       friendlyName: testConfiguration,
-  //       isPubliclyListed: true,
-  //     };
+    });
+    it.each(ConfigureTest('UFV'))('Updates the friendlyName and visbility as requested [%s]', async (testConfiguration: string) => {
+      StartTest(testConfiguration);
+      const createdRoom1 = await apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true });
       
-  //     expect(room1Response).toContain(updateRequest1.coveyRoomPassword);
+      const room1Response = {
+        coveyRoomID: createdRoom1.coveyRoomID,
+        friendlyName: testConfiguration,
+      };
 
-  //   });
-  //   it.each(ConfigureTest('UFV'))('Updates the friendlyName and visbility as requested [%s]', async (testConfiguration: string) => {
-  //     StartTest(testConfiguration);
-  //     const createdRoom1 = await Promise.all([
-  //       apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true }),
-  //     ]);  
+      const updateRequest1 = {
+        coveyRoomID: createdRoom1.coveyRoomID,
+        coveyRoomPassword: createdRoom1.coveyRoomPassword,
+        friendlyName: testConfiguration,
+        isPubliclyListed: true,
+      };
       
-  //     const room1Response = {
-  //       coveyRoomID: createdRoom1.coveyRoomID,
-  //       friendlyName: testConfiguration,
-  //     };
+      const updatedRoom = apiClient.updateRoom(updateRequest1);
 
-  //     const updateRequest1 = {
-  //       coveyRoomID: createdRoom1.coveyRoomID,
-  //       coveyRoomPassword: createdRoom1.coveyRoomPassword,
-  //       friendlyName: testConfiguration,
-  //       isPubliclyListed: true,
-  //     };
-      
-  //     const updatedRoom = apiClient.updateRoom(updateRequest1);
+      expect(room1Response.friendlyName).toMatch(updateRequest1.friendlyName);
+    });
 
-  //     expect(room1Response.friendlyName).toMatch(updateRequest1.friendlyName);
-  //   });
+    it.each(ConfigureTest('UFVU'))('Does not update the visibility if visibility is undefined [%s]', async (testConfiguration: string) => {
+      StartTest(testConfiguration);
 
-  //   it.each(ConfigureTest('UFVU'))('Does not update the visibility if visibility is undefined [%s]', async (testConfiguration: string) => {
-  //     StartTest(testConfiguration);
-
-  //   });
-  // });
+    });
+  });
 
   describe('CoveyMemberAPI', () => {
     it.each(ConfigureTest('MNSR'))('Throws an error if the room does not exist [%s]', async (testConfiguration: string) => {
@@ -278,7 +275,7 @@ describe('RoomServiceApiREST', () => {
       try {
         const userRoomRequest = await apiClient.joinRoom(newRoomRequest);
       } catch (e) {
-        expect(e).toMatch('room not available to join!');
+        expect(e.name).toMatch('Error');
       }
 
     });
@@ -305,8 +302,9 @@ describe('RoomServiceApiREST', () => {
       };
 
       const allRooms = await apiClient.listRooms();
-      const userRoomRequest = await apiClient.joinRoom(newRoomRequest);
-      expect(userRoomRequest).toBe('success!');
+      expect(async () => {
+        await apiClient.joinRoom(newRoomRequest);
+      }).not.toThrowError();
     });
   });
 });
