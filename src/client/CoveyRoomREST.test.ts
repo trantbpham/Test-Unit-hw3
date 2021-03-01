@@ -101,7 +101,7 @@ describe('RoomServiceApiREST', () => {
         friendlyName: testConfiguration,
       };
 
-      expect(allRooms).not.toContainEqual(room3Response); 
+      expect(allRooms.rooms).not.toContainEqual(room3Response); 
       expect(allRooms.rooms).toContainEqual(room2Response); 
       expect(allRooms.rooms).toContainEqual(room1Response); 
       
