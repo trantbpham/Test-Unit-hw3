@@ -45,7 +45,11 @@ describe('RoomServiceApiREST', () => {
       StartTest(testConfiguration);
       try {
         const roomWithName = await apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true });
-        expect(roomWithName.coveyRoomID.toString).toContain(testConfiguration.toString);
+        if (testConfiguration === '') {
+          expect(roomWithName).toThrowError();
+        } else {
+          expect(roomWithName.coveyRoomID.toString).toContain(testConfiguration);
+        }
       } catch (e) {
         // Do nothing
         expect(e.name).toMatch('Error');
