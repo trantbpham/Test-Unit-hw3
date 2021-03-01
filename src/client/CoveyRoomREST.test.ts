@@ -40,16 +40,16 @@ describe('RoomServiceApiREST', () => {
       ]);
     
       expect(createdRoom1.coveyRoomID).not.toStrictEqual(createdRoom2.coveyRoomID);
+      expect(createdRoom2.coveyRoomID).not.toStrictEqual('');
     });
     it.each(ConfigureTest('CR2'))('Prohibits a blank friendlyName [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
       try {
         const roomWithName = await apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true });
         if (testConfiguration === '') {
-          expect(roomWithName).toThrowError();
-        } else {
-          expect(roomWithName.coveyRoomID.toString).toContain(testConfiguration);
+          expect(roomWithName).toContain(testConfiguration);
         }
+        expect(roomWithName.coveyRoomID.toString).toContain(testConfiguration);
       } catch (e) {
         // Do nothing
         expect(e.name).toMatch('Error');
