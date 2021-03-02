@@ -193,12 +193,8 @@ describe('RoomServiceApiREST', () => {
       //   }).rejects.toThrowError();
       // }
 
-      expect(async () => {
-        await apiClient.deleteRoom(deleteRequest1);
-      }).resolves.not.toThrowError();
-
-      expect(async () => {
-        await apiClient.deleteRoom(deleteRequest2);
+      await expect( () => {
+        apiClient.deleteRoom(deleteRequest2);
       }).rejects.toThrowError();
     });
 
@@ -226,11 +222,7 @@ describe('RoomServiceApiREST', () => {
       await apiClient.deleteRoom(room2Response);
       expect(async () => { await apiClient.joinRoom(userJoinRequest); }).rejects.toThrowError();
 
-      const room2Struct = {
-        coveyRoomID: createdRoom2.coveyRoomID.toString,
-        friendlyName: testConfiguration,
-      };
-
+ 
       const listRes = await apiClient.listRooms();
       expect(listRes.rooms).not.toContainEqual(room1Response);
     });
