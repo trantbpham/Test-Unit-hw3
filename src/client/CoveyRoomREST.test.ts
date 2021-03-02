@@ -6,7 +6,6 @@ import { AddressInfo } from 'net';
 import addRoomRoutes from '../router/room';
 import RoomServiceClient from './RoomServiceClient';
 import { ConfigureTest, StartTest } from '../FaultManager';
-import { roomListHandler, RoomListResponse, RoomJoinRequest, roomSubscriptionHandler } from '../requestHandlers/CoveyRoomRequestHandlers';
 
 describe('RoomServiceApiREST', () => {
   /* A testing server that will be deployed before testing and reused throughout all of the tests */
@@ -74,9 +73,6 @@ describe('RoomServiceApiREST', () => {
         expect(roomList.rooms).toContainEqual(room1Res);
       }
 
-      // expect(async () => { await apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true }); }).toThrowError();
-
-      
     });
   });
 
@@ -139,18 +135,11 @@ describe('RoomServiceApiREST', () => {
   describe('CoveyRoomDeleteAPI', () => {
     it.each(ConfigureTest('DRP'))('Throws an error if the password is invalid [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
-      const [createdRoom1, createdRoom2] = await Promise.all([
-        apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true }),
-        apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true }),
-      ]);
+      const createdRoom2 = await apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true });
 
-      const deleteRequest1 = {
-        coveyRoomID: createdRoom1.coveyRoomID,
-        coveyRoomPassword: createdRoom1.coveyRoomPassword,
-      };
       const deleteRequest2 = {
         coveyRoomID: createdRoom2.coveyRoomID,
-        coveyRoomPassword: ' ',
+        coveyRoomPassword: 'ijijij',
       };
 
       // if (testConfiguration === 'No fault') {
@@ -162,24 +151,16 @@ describe('RoomServiceApiREST', () => {
       //     await apiClient.deleteRoom(deleteRequest2);
       //   }).rejects.toThrowError();
       // }
-      expect(async () => {
-        await apiClient.deleteRoom(deleteRequest2);
-      }).rejects.toThrowError();
+
+      await expect( () => apiClient.deleteRoom(deleteRequest2)).rejects.toThrowError();
     });
 
     it.each(ConfigureTest('DRID'))('Throws an error if the roomID is invalid [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
-      const [createdRoom1, createdRoom2] = await Promise.all([
-        apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true }),
-        apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true }),
-      ]);
+      const createdRoom2 = await apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true });
 
-      const deleteRequest1 = {
-        coveyRoomID: createdRoom1.coveyRoomID,
-        coveyRoomPassword: createdRoom1.coveyRoomPassword,
-      };
       const deleteRequest2 = {
-        coveyRoomID: createdRoom2.coveyRoomPassword,
+        coveyRoomID: 'ijijiji',
         coveyRoomPassword: createdRoom2.coveyRoomPassword,
       };
 
@@ -193,9 +174,7 @@ describe('RoomServiceApiREST', () => {
       //   }).rejects.toThrowError();
       // }
 
-      await expect( () => {
-        apiClient.deleteRoom(deleteRequest2);
-      }).rejects.toThrowError();
+      await expect( () => apiClient.deleteRoom(deleteRequest2)).rejects.toThrow();
     });
 
     it.each(ConfigureTest('DRV'))('Deletes a room if given a valid password and room, no longer allowing it to be joined or listed [%s]', async (testConfiguration: string) => {
@@ -220,7 +199,7 @@ describe('RoomServiceApiREST', () => {
       };
 
       await apiClient.deleteRoom(room2Response);
-      expect(async () => { await apiClient.joinRoom(userJoinRequest); }).rejects.toThrowError();
+      await expect( () => apiClient.joinRoom(userJoinRequest)).rejects.toThrowError();
 
  
       const listRes = await apiClient.listRooms();
@@ -240,28 +219,16 @@ describe('RoomServiceApiREST', () => {
         friendlyName: testConfiguration,
       };
 
-  
-      const updateRequest1 = {
+      const updateRequest = {
         coveyRoomID: createdRoom1.coveyRoomID,
-        coveyRoomPassword: createdRoom1.coveyRoomPassword,
-        friendlyName: testConfiguration,
+        coveyRoomPassword: 'padfadf',
+        friendlyName: 'newName',
         isPubliclyListed: true,
       };
 
-      const updateRequest2 = {
-        coveyRoomID: createdRoom1.coveyRoomID,
-        coveyRoomPassword: createdRoom1.coveyRoomID,
-        friendlyName: testConfiguration,
-        isPubliclyListed: true,
-      };
-      
-      expect(async () => {
-        await apiClient.updateRoom(updateRequest1);
-      }).resolves.not.toThrowError();
-
-      expect(async () => {
-        await apiClient.updateRoom(updateRequest2);
-      }).rejects.toThrowError();
+      await expect( () => apiClient.updateRoom(updateRequest)).rejects.toThrow();
+      const roomList = await apiClient.listRooms();
+      expect(roomList.rooms).toContainEqual(room1Response);
 
     });
     it.each(ConfigureTest('UFV'))('Updates the friendlyName and visbility as requested [%s]', async (testConfiguration: string) => {
@@ -303,6 +270,50 @@ describe('RoomServiceApiREST', () => {
 
     it.each(ConfigureTest('UFVU'))('Does not update the visibility if visibility is undefined [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
+      const createdRoom1 = await apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: false });
+      const createdRoom2 = await apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true });
+
+      const numVisibleRoom = (await apiClient.listRooms()).rooms.length;
+
+      const updateRequest = {
+        coveyRoomID: createdRoom1.coveyRoomID,
+        coveyRoomPassword: createdRoom1.coveyRoomPassword,
+        friendlyName: 'newName',
+      };
+
+      const updateRequest2 = {
+        coveyRoomID: createdRoom1.coveyRoomID,
+        coveyRoomPassword: createdRoom1.coveyRoomPassword,
+        friendlyName: 'newName',
+        isPubliclyListed: undefined,
+      };
+
+      const updateRequest3 = {
+        coveyRoomID: createdRoom2.coveyRoomID,
+        coveyRoomPassword: createdRoom2.coveyRoomPassword,
+        friendlyName: 'newName2',
+        isPubliclyListed: undefined,
+      };
+
+      const room1Response = {
+        coveyRoomID: createdRoom1.coveyRoomID,
+        friendlyName: 'newName',
+      };
+
+      const newRoom2Response = {
+        coveyRoomID: createdRoom1.coveyRoomID,
+        friendlyName: 'newName2',
+      };
+      
+      await apiClient.updateRoom(updateRequest);
+      await apiClient.updateRoom(updateRequest2);
+      await apiClient.updateRoom(updateRequest3);
+
+      const list = await apiClient.listRooms();
+
+      expect(numVisibleRoom).toStrictEqual(list.rooms.length);
+      expect(list.rooms).not.toContainEqual(room1Response);
+      expect(list.rooms).not.toContainEqual(newRoom2Response);
 
     });
   });
@@ -310,31 +321,12 @@ describe('RoomServiceApiREST', () => {
   describe('CoveyMemberAPI', () => {
     it.each(ConfigureTest('MNSR'))('Throws an error if the room does not exist [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
-      const [createdRoom1, createdRoom2] = await Promise.all([
-        apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true }),
-        apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true }),
-      ]);  
-      
-      const room1Response = {
-        coveyRoomID: createdRoom1.coveyRoomID,
-        friendlyName: testConfiguration,
-      };
-      const room2Response = {
-        coveyRoomID: createdRoom2.coveyRoomID,
-        friendlyName: testConfiguration,
-      };
 
-      const newRoomRequest = {
-        userName: testConfiguration,
-        coveyRoomID: createdRoom2.coveyRoomID,
+      const request = {
+        userName: 'Me',
+        coveyRoomID: 'noRoomWThisName',
       };
-
-      await apiClient.deleteRoom(createdRoom2);
-      try {
-        const userRoomRequest = await apiClient.joinRoom(newRoomRequest);
-      } catch (e) {
-        expect(e.name).toMatch('Error');
-      }
+      await expect( () => apiClient.joinRoom(request)).rejects.toThrowError();
 
     });
 
@@ -342,27 +334,24 @@ describe('RoomServiceApiREST', () => {
       StartTest(testConfiguration);
       const [createdRoom1, createdRoom2] = await Promise.all([
         apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true }),
-        apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: true }),
+        apiClient.createRoom({ friendlyName: testConfiguration, isPubliclyListed: false }),
       ]);  
-      
-      const room1Response = {
+
+      const newRoomRequest1 = {
+        userName: 'user1',
         coveyRoomID: createdRoom1.coveyRoomID,
-        friendlyName: testConfiguration,
-      };
-      const room2Response = {
-        coveyRoomID: createdRoom2.coveyRoomID,
-        friendlyName: testConfiguration,
       };
 
-      const newRoomRequest = {
-        userName: testConfiguration,
+      const newRoomRequest2 = {
+        userName: 'user2',
         coveyRoomID: createdRoom2.coveyRoomID,
       };
 
-      const allRooms = await apiClient.listRooms();
-      expect(async () => {
-        await apiClient.joinRoom(newRoomRequest);
-      }).not.toThrowError();
+      const response1 = await apiClient.joinRoom(newRoomRequest1);
+      const response2 = await apiClient.joinRoom(newRoomRequest2);
+
+      expect(response1).toHaveProperty('coveyUserID');
+      expect(response2).toHaveProperty('coveyUserID');
     });
   });
 });
