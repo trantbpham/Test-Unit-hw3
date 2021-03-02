@@ -43,9 +43,9 @@ describe('CoveyRoomController', () => {
         const testPlayer = new Player('testUser');
         const testRoomController = new CoveyRoomController('testID', true);
 
-        const mockRoomController = mock<CoveyRoomController>();
+        // const mockRoomController = mock<CoveyRoomController>();
         // mock.start('join room')
-
+        testRoomController.addPlayer(testPlayer);
         expect(mockGetTokenForRoom).toHaveBeenCalledTimes(1);
 
       });
