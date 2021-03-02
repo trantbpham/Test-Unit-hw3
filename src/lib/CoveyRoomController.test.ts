@@ -6,7 +6,7 @@ import CoveyRoomListener from '../types/CoveyRoomListener';
 import CoveyRoomController from './CoveyRoomController';
 import CoveyRoomsStore from './CoveyRoomsStore';
 import Player from '../types/Player';
-import { roomSubscriptionHandler } from '../requestHandlers/CoveyRoomRequestHandlers';
+import { roomSubscriptionHandler, RoomUpdateRequest } from '../requestHandlers/CoveyRoomRequestHandlers';
 import * as TestUtils from '../TestUtils';
 import { ConfigureTest, StartTest } from '../FaultManager';
 
@@ -26,18 +26,30 @@ describe('CoveyRoomController', () => {
     // Reset any logged invocations of getTokenForRoom before each test
     mockGetTokenForRoom.mockClear();
   });
+
   it.each(ConfigureTest('CRCC'))('constructor should set the friendlyName property [%s]', (testConfiguration: string) => {
     StartTest(testConfiguration);
+    const newRoom = new CoveyRoomController('testRoom', true);
 
+    expect(newRoom.coveyRoomID).toBe('testRoom');
+    expect(newRoom.friendlyName).toBe('testFriendlyName');
   });
+
   describe('addPlayer', () => {
     it.each(ConfigureTest('CRCAP'))('should use the coveyRoomID and player ID properties when requesting a video token [%s]',
       async (testConfiguration: string) => {
         StartTest(testConfiguration);
+        
+        const testPlayer = new Player('testUser');
+        const testRoomController = new CoveyRoomController('testID', true);
+        
+        expect(CoveyRoomController).toHaveBeenCalledTimes(1);
 
       });
   });
+
   describe('room listeners and events', () => {
+    afterEach(() => jest.resetAllMocks());
     // Set up mock room listeners, you will likely find it useful to use these in the room listener tests.
     // Feel free to change these lines as you see fit, or leave them and use them as-is
     const mockListeners = [mock<CoveyRoomListener>(),
@@ -46,10 +58,28 @@ describe('CoveyRoomController', () => {
     beforeEach(() => {
       mockListeners.forEach(mockReset);
     });
+    
     it.each(ConfigureTest('RLEMV'))('should notify added listeners of player movement when updatePlayerLocation is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
 
+      expect(Player).not.toHaveBeenCalled();
+      const testPlayer = new Player('testUser');
+
+      const testRoomController2 = new CoveyRoomController('testRoomID', true);
+      testRoomController2.addPlayer(testPlayer);
+      expect(CoveyRoomController).toHaveBeenCalledTimes(1);
+
+      const newLocation = testRoomController2.updatePlayerLocation(testPlayer, {
+        x: 0,
+        y: 2,
+        moving: true,
+        rotation: 'front',
+      });
+
+      expect(mockListeners).toHaveBeenCalledWith(newLocation);
     });
+
+
     it.each(ConfigureTest('RLEDC'))('should notify added listeners of player disconnections when destroySession is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
 
@@ -80,6 +110,7 @@ describe('CoveyRoomController', () => {
     });
   });
   describe('roomSubscriptionHandler', () => {
+    // afterEach(() => jest.resetAllMocks());
     /* Set up a mock socket, which you may find to be useful for testing the events that get sent back out to the client
     by the code in CoveyRoomController calling socket.emit.each(ConfigureTest(''))('event', payload) - if you pass the mock socket in place of
     a real socket, you can record the invocations of emit and check them.

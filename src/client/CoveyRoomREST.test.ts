@@ -142,16 +142,6 @@ describe('RoomServiceApiREST', () => {
         coveyRoomPassword: 'ijijij',
       };
 
-      // if (testConfiguration === 'No fault') {
-      //   expect(async () => {
-      //     await apiClient.deleteRoom(deleteRequest1);
-      //   }).resolves.not.toThrowError();
-      // } else {
-      //   expect(async () => {
-      //     await apiClient.deleteRoom(deleteRequest2);
-      //   }).rejects.toThrowError();
-      // }
-
       await expect( () => apiClient.deleteRoom(deleteRequest2)).rejects.toThrowError();
     });
 
@@ -163,16 +153,6 @@ describe('RoomServiceApiREST', () => {
         coveyRoomID: 'ijijiji',
         coveyRoomPassword: createdRoom2.coveyRoomPassword,
       };
-
-      // if (testConfiguration === 'No fault') {
-      //   expect(async () => {
-      //     await apiClient.deleteRoom(deleteRequest1);
-      //   }).resolves.not.toThrowError();
-      // } else {
-      //   expect(async () => {
-      //     await apiClient.deleteRoom(deleteRequest2);
-      //   }).rejects.toThrowError();
-      // }
 
       await expect( () => apiClient.deleteRoom(deleteRequest2)).rejects.toThrow();
     });
