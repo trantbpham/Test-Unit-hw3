@@ -29,11 +29,11 @@ describe('CoveyRoomController', () => {
 
   it.each(ConfigureTest('CRCC'))('constructor should set the friendlyName property [%s]', (testConfiguration: string) => {
     StartTest(testConfiguration);
-    const newRoom = new CoveyRoomController('testRoom', true);
+    const newRoom = new CoveyRoomController('testFriendlyName', true);
 
-    expect(newRoom.coveyRoomID).toBe('testRoom');
     expect(newRoom.friendlyName).toBe('testFriendlyName');
   });
+
 
   describe('addPlayer', () => {
     it.each(ConfigureTest('CRCAP'))('should use the coveyRoomID and player ID properties when requesting a video token [%s]',
@@ -42,8 +42,11 @@ describe('CoveyRoomController', () => {
         
         const testPlayer = new Player('testUser');
         const testRoomController = new CoveyRoomController('testID', true);
-        
-        expect(CoveyRoomController).toHaveBeenCalledTimes(1);
+
+        const mockRoomController = mock<CoveyRoomController>();
+        // mock.start('join room')
+
+        expect(mockGetTokenForRoom).toHaveBeenCalledTimes(1);
 
       });
   });
@@ -62,12 +65,12 @@ describe('CoveyRoomController', () => {
     it.each(ConfigureTest('RLEMV'))('should notify added listeners of player movement when updatePlayerLocation is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
 
-      expect(Player).not.toHaveBeenCalled();
+      // expect(Player).not.toHaveBeenCalled();
       const testPlayer = new Player('testUser');
 
       const testRoomController2 = new CoveyRoomController('testRoomID', true);
       testRoomController2.addPlayer(testPlayer);
-      expect(CoveyRoomController).toHaveBeenCalledTimes(1);
+      expect(mockListeners).toHaveBeenCalledTimes(1);
 
       const newLocation = testRoomController2.updatePlayerLocation(testPlayer, {
         x: 0,
@@ -77,6 +80,8 @@ describe('CoveyRoomController', () => {
       });
 
       expect(mockListeners).toHaveBeenCalledWith(newLocation);
+
+
     });
 
 
