@@ -85,7 +85,7 @@ describe('CoveyRoomController', () => {
       testRoomController2.addPlayer(testPlayer);
       m.updatePlayerLocation(testPlayer, newLocation);
   
-      expect(m.updatePlayerLocation).toHaveBeenLastCalledWith(testPlayer, newLocation);
+      expect(m.updatePlayerLocation).toHaveBeenCalledWith(testPlayer, newLocation);
 
 
     });
@@ -95,6 +95,13 @@ describe('CoveyRoomController', () => {
       StartTest(testConfiguration);
       const testPlayer = new Player('testUser');
       const testRoomController2 = new CoveyRoomController('testRoomID', true);
+      testRoomController2.addPlayer(testPlayer);
+
+      const mockPlayerSession = new PlayerSession(testPlayer);
+      m.addPlayer(testPlayer);
+
+      m.destroySession(mockPlayerSession);
+      expect(m.destroySession).toHaveBeenCalledWith(mockPlayerSession);
 
     });
     it.each(ConfigureTest('RLENP'))('should notify added listeners of new players when addPlayer is called [%s]', async (testConfiguration: string) => {
