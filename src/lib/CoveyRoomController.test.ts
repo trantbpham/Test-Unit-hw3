@@ -223,13 +223,13 @@ describe('CoveyRoomController', () => {
     });
     it.each(ConfigureTest('SUBIDDC'))('should reject connections with invalid room IDs by calling disconnect [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
-
+ 
       const connectedPlayer = new Player(`test player ${nanoid()}`);
       const session = await testingRoom.addPlayer(connectedPlayer);
       TestUtils.setSessionTokenAndRoomID(testingRoom.friendlyName, session.sessionToken, mockSocket);
       roomSubscriptionHandler(mockSocket);
 
-      expect(mockSocket.disconnect).toBeCalled(); 
+      expect(mockSocket.disconnect).toBeCalled();
 
      
 
@@ -247,12 +247,8 @@ describe('CoveyRoomController', () => {
     it.each(ConfigureTest('SUBKTDC'))('should reject connections with invalid session tokens by calling disconnect [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
 
-      
-      const connectedPlayer = new Player(`test player ${nanoid()}`);
-      const session = await testingRoom.addPlayer(connectedPlayer);
       TestUtils.setSessionTokenAndRoomID(testingRoom.coveyRoomID, 'sdfkjl', mockSocket);
       roomSubscriptionHandler(mockSocket);
-
       expect(mockSocket.disconnect).toBeCalled(); 
 
       /* Hint: see the beforeEach in the 'with a valid session token' case to see an example of how to configure the
@@ -272,13 +268,33 @@ describe('CoveyRoomController', () => {
         const session = await testingRoom.addPlayer(connectedPlayer);
         TestUtils.setSessionTokenAndRoomID(testingRoom.coveyRoomID, session.sessionToken, mockSocket);
         roomSubscriptionHandler(mockSocket);
+
       });
       it.each(ConfigureTest('SUBNP'))('should add a room listener, which should emit "newPlayer" to the socket when a player joins [%s]', async (testConfiguration: string) => {
         StartTest(testConfiguration);
 
+        const newTestPlayer = new Player('testUser');
+        await testingRoom.addPlayer(newTestPlayer);
+        expect(mockSocket.emit).toBeCalled(); 
+
+
       });
       it.each(ConfigureTest('SUBMV'))('should add a room listener, which should emit "playerMoved" to the socket when a player moves [%s]', async (testConfiguration: string) => {
         StartTest(testConfiguration);
+
+        const newTestPlayer = new Player('testUser');
+        const d: Direction = 'front';
+      
+        const newLocation = {
+          x: 0,
+          y: 2,
+          moving: true,
+          rotation: d,
+        };
+
+
+        testingRoom.updatePlayerLocation(newTestPlayer, newLocation);
+        expect(mockSocket.emit).toBeCalled(); 
 
       });
       it.each(ConfigureTest('SUBDC'))('should add a room listener, which should emit "playerDisconnect" to the socket when a player disconnects [%s]', async (testConfiguration: string) => {
@@ -295,7 +311,13 @@ describe('CoveyRoomController', () => {
            */
         it.each(ConfigureTest('SUBDCRL'))('should remove the room listener for that socket, and stop sending events to it [%s]', async (testConfiguration: string) => {
           StartTest(testConfiguration);
-
+          const connectedPlayer1 = new Player(`test player ${nanoid()}`);
+          const session = await testingRoom.addPlayer(connectedPlayer1);
+          TestUtils.setSessionTokenAndRoomID(testingRoom.friendlyName, session.sessionToken, mockSocket);
+          roomSubscriptionHandler(mockSocket);
+    
+          expect(mockSocket.disconnect).toBeCalled();
+    
         });
         it.each(ConfigureTest('SUBDCSE'))('should destroy the session corresponding to that socket [%s]', async (testConfiguration: string) => {
           StartTest(testConfiguration);
