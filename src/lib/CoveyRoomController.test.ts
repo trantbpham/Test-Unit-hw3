@@ -25,11 +25,7 @@ const mockListeners = [mock<CoveyRoomListener>(),
   mock<CoveyRoomListener>(),
   mock<CoveyRoomListener>()];
 
-const testPlayer = new Player('testUser');
-const testRoomController2 = new CoveyRoomController('testRoomID', true);
-testRoomController2.addRoomListener(mockListeners[0]);
-testRoomController2.addRoomListener(mockListeners[1]);
-testRoomController2.addRoomListener(mockListeners[2]);
+
 
 
 
@@ -52,6 +48,12 @@ describe('CoveyRoomController', () => {
       async (testConfiguration: string) => {
         StartTest(testConfiguration);
         
+        const testPlayer = new Player('testUser');
+        const testRoomController2 = new CoveyRoomController('testRoomID', true);
+        testRoomController2.addRoomListener(mockListeners[0]);
+        testRoomController2.addRoomListener(mockListeners[1]);
+        testRoomController2.addRoomListener(mockListeners[2]);
+
         testRoomController2.addPlayer(testPlayer);
         expect(mockGetTokenForRoom).toHaveBeenCalledWith(testRoomController2.coveyRoomID, testPlayer.id);
 
@@ -59,6 +61,11 @@ describe('CoveyRoomController', () => {
   });
 
   describe('room listeners and events', () => {
+    const testPlayer = new Player('testUser');
+    const testRoomController2 = new CoveyRoomController('testRoomID', true);
+    testRoomController2.addRoomListener(mockListeners[0]);
+    testRoomController2.addRoomListener(mockListeners[1]);
+    testRoomController2.addRoomListener(mockListeners[2]);
     afterEach(() => jest.resetAllMocks());
     beforeEach(() => {
       mockListeners.forEach(mockReset);
@@ -113,27 +120,84 @@ describe('CoveyRoomController', () => {
       StartTest(testConfiguration);
 
       await testRoomController2.addPlayer(testPlayer);
+      expect(mockListeners[0].onRoomDestroyed).toHaveBeenCalledTimes(0);
+      expect(mockListeners[1].onRoomDestroyed).toHaveBeenCalledTimes(0);
+      expect(mockListeners[2].onRoomDestroyed).toHaveBeenCalledTimes(0);
+
       testRoomController2.disconnectAllPlayers();
 
-      expect(mockListeners[0].onRoomDestroyed).toHaveBeenCalledWith(testRoomController2);
-
+      expect(mockListeners[0].onRoomDestroyed).toHaveBeenCalledTimes(1);
+      expect(mockListeners[1].onRoomDestroyed).toHaveBeenCalledTimes(1);
+      expect(mockListeners[2].onRoomDestroyed).toHaveBeenCalledTimes(1);
     });
+
     it.each(ConfigureTest('RLEMVN'))('should not notify removed listeners of player movement when updatePlayerLocation is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
+      const d: Direction = 'front';
+      
+      const newLocation = {
+        x: 0,
+        y: 2,
+        moving: true,
+        rotation: d,
+      };
 
+      await testRoomController2.addPlayer(testPlayer);
+      testRoomController2.updatePlayerLocation(testPlayer, newLocation);
+      testRoomController2.updatePlayerLocation(testPlayer, newLocation);
+      testRoomController2.updatePlayerLocation(testPlayer, newLocation);
 
+      testRoomController2.removeRoomListener(mockListeners[0]);
+      testRoomController2.removeRoomListener(mockListeners[1]);
+      testRoomController2.removeRoomListener(mockListeners[2]);
+
+      expect(mockListeners[0].onPlayerDisconnected).not.toHaveBeenCalled();
+      expect(mockListeners[1].onPlayerDisconnected).not.toHaveBeenCalled();
+      expect(mockListeners[2].onPlayerDisconnected).not.toHaveBeenCalled();
 
     });
     it.each(ConfigureTest('RLEDCN'))('should not notify removed listeners of player disconnections when destroySession is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
 
+      const mockPlayerSession = new PlayerSession(testPlayer);
+
+      testRoomController2.destroySession(mockPlayerSession);
+      testRoomController2.disconnectAllPlayers();
+
+      testRoomController2.removeRoomListener(mockListeners[0]);
+      testRoomController2.removeRoomListener(mockListeners[1]);
+      testRoomController2.removeRoomListener(mockListeners[2]);
+
+      expect(mockListeners[0].onPlayerDisconnected).not.toHaveBeenCalled();
+      expect(mockListeners[1].onPlayerDisconnected).not.toHaveBeenCalled();
+      expect(mockListeners[2].onPlayerDisconnected).not.toHaveBeenCalled();
+
+
     });
     it.each(ConfigureTest('RLENPN'))('should not notify removed listeners of new players when addPlayer is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
 
+      await testRoomController2.addPlayer(testPlayer);
+
+      testRoomController2.removeRoomListener(mockListeners[0]);
+      testRoomController2.removeRoomListener(mockListeners[1]);
+      testRoomController2.removeRoomListener(mockListeners[2]);
+
+      expect(mockListeners[0].onPlayerDisconnected).not.toHaveBeenCalled();
+      expect(mockListeners[1].onPlayerDisconnected).not.toHaveBeenCalled();
+      expect(mockListeners[2].onPlayerDisconnected).not.toHaveBeenCalled();
+
+
     });
     it.each(ConfigureTest('RLEDEN'))('should not notify removed listeners that the room is destroyed when disconnectAllPlayers is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
+      
+      await testRoomController2.addPlayer(testPlayer);
+
+      testRoomController2.disconnectAllPlayers();
+      expect(mockListeners[0].onRoomDestroyed).not.toHaveBeenCalled();
+      expect(mockListeners[1].onRoomDestroyed).not.toHaveBeenCalled();
+      expect(mockListeners[2].onRoomDestroyed).not.toHaveBeenCalled();
 
     });
   });
@@ -160,14 +224,17 @@ describe('CoveyRoomController', () => {
     it.each(ConfigureTest('SUBIDDC'))('should reject connections with invalid room IDs by calling disconnect [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
 
-
+      // const connectedPlayer = new Player(`test player ${nanoid()}`);
+      // const session = await testingRoom.addPlayer(connectedPlayer);
+      // TestUtils.setSessionTokenAndRoomID(testingRoom.coveyRoomID, session.sessionToken, mockSocket);
+      // roomSubscriptionHandler(mockSocket);
 
       /* Hint: see the beforeEach in the 'with a valid session token' case to see an example of how to configure the
          mock socket and connect it to the room controller
        */
 
-       // mock socket is the coveyRoomListener
-       // setSessionTokenAndRoomID and pass in the wrong roomID or token and make sure it like catches
+      // mock socket is the coveyRoomListener
+      // setSessionTokenAndRoomID and pass in the wrong roomID or token and make sure it like catches
 
 
 
