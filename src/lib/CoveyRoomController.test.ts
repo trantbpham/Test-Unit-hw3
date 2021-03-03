@@ -10,6 +10,7 @@ import { roomSubscriptionHandler, RoomUpdateRequest } from '../requestHandlers/C
 import * as TestUtils from '../TestUtils';
 import { ConfigureTest, StartTest } from '../FaultManager';
 import { UserLocation, Direction } from '../CoveyTypes';
+import PlayerSession from '../types/PlayerSession';
 
 // Set up a manual mock for the getTokenForRoom function in TwilioVideo
 jest.mock('./TwilioVideo');
@@ -21,8 +22,12 @@ TwilioVideo.getInstance = () => ({
 });
 
 interface RoomController {
+  addPlayer: (newPlayer: Player) => Promise<PlayerSession>;
   updatePlayerLocation: (player: Player, location: UserLocation) => void;
+  destroySession: (session: PlayerSession) => void
 }
+
+const m = mock<RoomController>();
 
 describe('CoveyRoomController', () => {
   beforeEach(() => {
@@ -68,9 +73,8 @@ describe('CoveyRoomController', () => {
       
       const testPlayer = new Player('testUser');
       const testRoomController2 = new CoveyRoomController('testRoomID', true);
-      testRoomController2.addPlayer(testPlayer);
       const d: Direction = 'front';
-      const m = mock<RoomController>();
+      
       const newLocation = {
         x: 0,
         y: 2,
@@ -78,6 +82,7 @@ describe('CoveyRoomController', () => {
         rotation: d,
       };
 
+      testRoomController2.addPlayer(testPlayer);
       m.updatePlayerLocation(testPlayer, newLocation);
   
       expect(m.updatePlayerLocation).toHaveBeenLastCalledWith(testPlayer, newLocation);
@@ -95,11 +100,12 @@ describe('CoveyRoomController', () => {
     it.each(ConfigureTest('RLENP'))('should notify added listeners of new players when addPlayer is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
 
-      // const testPlayer = new Player('testUser');
-      // const testRoomController2 = new CoveyRoomController('testRoomID', true);
-      // const mockAddPlayer = testRoomController2.addPlayer(testPlayer);
+      const testPlayer = new Player('testUser');
+      const testRoomController2 = new CoveyRoomController('testRoomID', true);
+      testRoomController2.addPlayer(testPlayer);
 
-      // expect(mockListeners).toHaveBeenLastCalledWith(mockAddPlayer);
+      m.addPlayer(testPlayer);
+      expect(m.addPlayer).toHaveBeenLastCalledWith(testPlayer);
 
     });
     it.each(ConfigureTest('RLEDE'))('should notify added listeners that the room is destroyed when disconnectAllPlayers is called [%s]', async (testConfiguration: string) => {
