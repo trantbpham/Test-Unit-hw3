@@ -31,6 +31,8 @@ testRoomController2.addRoomListener(mockListeners[0]);
 testRoomController2.addRoomListener(mockListeners[1]);
 testRoomController2.addRoomListener(mockListeners[2]);
 
+
+
 describe('CoveyRoomController', () => {
   beforeEach(() => {
     // Reset any logged invocations of getTokenForRoom before each test
@@ -51,7 +53,7 @@ describe('CoveyRoomController', () => {
         StartTest(testConfiguration);
         
         testRoomController2.addPlayer(testPlayer);
-        expect(mockGetTokenForRoom).toHaveBeenCalledTimes(1);
+        expect(mockGetTokenForRoom).toHaveBeenCalledWith(testRoomController2.coveyRoomID, testPlayer.id);
 
       });
   });
@@ -89,6 +91,7 @@ describe('CoveyRoomController', () => {
       StartTest(testConfiguration);
 
       const mockPlayerSession = new PlayerSession(testPlayer);
+
       testRoomController2.destroySession(mockPlayerSession);
       
       expect(mockListeners[0].onPlayerDisconnected).toHaveBeenCalledWith(testPlayer);
@@ -109,15 +112,16 @@ describe('CoveyRoomController', () => {
     it.each(ConfigureTest('RLEDE'))('should notify added listeners that the room is destroyed when disconnectAllPlayers is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
 
+      await testRoomController2.addPlayer(testPlayer);
       testRoomController2.disconnectAllPlayers();
 
-      expect(mockListeners[0].onRoomDestroyed).toHaveBeenCalledWith(testPlayer);
+      expect(mockListeners[0].onRoomDestroyed).toHaveBeenCalledWith(testRoomController2);
 
     });
     it.each(ConfigureTest('RLEMVN'))('should not notify removed listeners of player movement when updatePlayerLocation is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
 
-      
+
 
     });
     it.each(ConfigureTest('RLEDCN'))('should not notify removed listeners of player disconnections when destroySession is called [%s]', async (testConfiguration: string) => {
@@ -155,6 +159,7 @@ describe('CoveyRoomController', () => {
     });
     it.each(ConfigureTest('SUBIDDC'))('should reject connections with invalid room IDs by calling disconnect [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
+
 
 
       /* Hint: see the beforeEach in the 'with a valid session token' case to see an example of how to configure the
