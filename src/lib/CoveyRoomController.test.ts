@@ -284,14 +284,12 @@ describe('CoveyRoomController', () => {
 
         const newTestPlayer = new Player('testUser');
         const d: Direction = 'front';
-      
         const newLocation = {
           x: 0,
           y: 2,
           moving: true,
           rotation: d,
         };
-
 
         testingRoom.updatePlayerLocation(newTestPlayer, newLocation);
         expect(mockSocket.emit).toBeCalled(); 
@@ -300,9 +298,19 @@ describe('CoveyRoomController', () => {
       it.each(ConfigureTest('SUBDC'))('should add a room listener, which should emit "playerDisconnect" to the socket when a player disconnects [%s]', async (testConfiguration: string) => {
         StartTest(testConfiguration);
 
+        const newTestPlayer = new Player('testUser');
+        const mockPlayerSession = new PlayerSession(newTestPlayer);
+
+        testingRoom.destroySession(mockPlayerSession);
+        expect(mockSocket.emit).toBeCalled(); 
+
       });
       it.each(ConfigureTest('SUBRC'))('should add a room listener, which should emit "roomClosing" to the socket and disconnect it when disconnectAllPlayers is called [%s]', async (testConfiguration: string) => {
         StartTest(testConfiguration);
+
+        testingRoom.disconnectAllPlayers();
+        expect(mockSocket.emit).toBeCalled(); 
+
 
       });
       describe('when a socket disconnect event is fired', () => {
