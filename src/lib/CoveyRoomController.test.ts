@@ -9,6 +9,7 @@ import Player from '../types/Player';
 import { roomSubscriptionHandler, RoomUpdateRequest } from '../requestHandlers/CoveyRoomRequestHandlers';
 import * as TestUtils from '../TestUtils';
 import { ConfigureTest, StartTest } from '../FaultManager';
+import { UserLocation, Direction } from '../CoveyTypes';
 
 // Set up a manual mock for the getTokenForRoom function in TwilioVideo
 jest.mock('./TwilioVideo');
@@ -19,7 +20,9 @@ TwilioVideo.getInstance = () => ({
   getTokenForRoom: mockGetTokenForRoom,
 });
 
-
+interface RoomController {
+  updatePlayerLocation: (player: Player, location: UserLocation) => void;
+}
 
 describe('CoveyRoomController', () => {
   beforeEach(() => {
@@ -42,10 +45,8 @@ describe('CoveyRoomController', () => {
         
         const testPlayer = new Player('testUser');
         const testRoomController = new CoveyRoomController('testID', true);
-
-        // const mockRoomController = mock<CoveyRoomController>();
-        // mock.start('join room')
         testRoomController.addPlayer(testPlayer);
+
         expect(mockGetTokenForRoom).toHaveBeenCalledTimes(1);
 
       });
@@ -64,22 +65,22 @@ describe('CoveyRoomController', () => {
     
     it.each(ConfigureTest('RLEMV'))('should notify added listeners of player movement when updatePlayerLocation is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
-
-      // expect(Player).not.toHaveBeenCalled();
+      
       const testPlayer = new Player('testUser');
-
       const testRoomController2 = new CoveyRoomController('testRoomID', true);
       testRoomController2.addPlayer(testPlayer);
-      expect(mockListeners).toHaveBeenCalledTimes(1);
-
-      const newLocation = testRoomController2.updatePlayerLocation(testPlayer, {
+      const d: Direction = 'front';
+      const m = mock<RoomController>();
+      const newLocation = {
         x: 0,
         y: 2,
         moving: true,
-        rotation: 'front',
-      });
+        rotation: d,
+      };
 
-      expect(mockListeners).toHaveBeenCalledWith(newLocation);
+      m.updatePlayerLocation(testPlayer, newLocation);
+  
+      expect(m.updatePlayerLocation).toHaveBeenLastCalledWith(testPlayer, newLocation);
 
 
     });
@@ -87,10 +88,18 @@ describe('CoveyRoomController', () => {
 
     it.each(ConfigureTest('RLEDC'))('should notify added listeners of player disconnections when destroySession is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
+      const testPlayer = new Player('testUser');
+      const testRoomController2 = new CoveyRoomController('testRoomID', true);
 
     });
     it.each(ConfigureTest('RLENP'))('should notify added listeners of new players when addPlayer is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
+
+      // const testPlayer = new Player('testUser');
+      // const testRoomController2 = new CoveyRoomController('testRoomID', true);
+      // const mockAddPlayer = testRoomController2.addPlayer(testPlayer);
+
+      // expect(mockListeners).toHaveBeenLastCalledWith(mockAddPlayer);
 
     });
     it.each(ConfigureTest('RLEDE'))('should notify added listeners that the room is destroyed when disconnectAllPlayers is called [%s]', async (testConfiguration: string) => {
@@ -137,9 +146,17 @@ describe('CoveyRoomController', () => {
     it.each(ConfigureTest('SUBIDDC'))('should reject connections with invalid room IDs by calling disconnect [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
 
+
       /* Hint: see the beforeEach in the 'with a valid session token' case to see an example of how to configure the
          mock socket and connect it to the room controller
        */
+
+       // mock socket is the coveyRoomListener
+       // setSessionTokenAndRoomID and pass in the wrong roomID or token and make sure it like catches
+
+
+
+
     });
     it.each(ConfigureTest('SUBKTDC'))('should reject connections with invalid session tokens by calling disconnect [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
