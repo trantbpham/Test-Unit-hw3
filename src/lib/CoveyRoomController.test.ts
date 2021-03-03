@@ -86,7 +86,9 @@ describe('CoveyRoomController', () => {
       m.updatePlayerLocation(testPlayer, newLocation);
   
       expect(m.updatePlayerLocation).toHaveBeenCalledWith(testPlayer, newLocation);
-
+      // if (testPlayer.location === {} ) {
+      //   expect(m.updatePlayerLocation).toThrowError('error');
+      // }
 
     });
 
@@ -112,7 +114,13 @@ describe('CoveyRoomController', () => {
       testRoomController2.addPlayer(testPlayer);
 
       m.addPlayer(testPlayer);
+      if (testPlayer === null) {
+        expect(m.addPlayer).rejects.toThrowError();      
+      }
+
       expect(m.addPlayer).toHaveBeenLastCalledWith(testPlayer);
+
+
 
     });
     it.each(ConfigureTest('RLEDE'))('should notify added listeners that the room is destroyed when disconnectAllPlayers is called [%s]', async (testConfiguration: string) => {
