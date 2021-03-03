@@ -79,9 +79,9 @@ describe('CoveyRoomController', () => {
       testRoomController2.updatePlayerLocation(testPlayer, newLocation);
       testRoomController2.updatePlayerLocation(testPlayer, newLocation);
 
-      expect(mockListeners[0].onPlayerMoved).toHaveBeenCalledWith(newLocation);
-      expect(mockListeners[1].onPlayerMoved).toHaveBeenCalledWith(newLocation);
-      expect(mockListeners[2].onPlayerMoved).toHaveBeenCalledWith(newLocation);
+      expect(mockListeners[0].onPlayerMoved).toHaveBeenCalledWith(testPlayer);
+      expect(mockListeners[1].onPlayerMoved).toHaveBeenCalledWith(testPlayer);
+      expect(mockListeners[2].onPlayerMoved).toHaveBeenCalledWith(testPlayer);
     });
 
 
@@ -89,13 +89,11 @@ describe('CoveyRoomController', () => {
       StartTest(testConfiguration);
 
       const mockPlayerSession = new PlayerSession(testPlayer);
-
-      await testRoomController2.addPlayer(testPlayer);
       testRoomController2.destroySession(mockPlayerSession);
       
-      expect(mockListeners[0].onPlayerDisconnected).toHaveBeenCalledWith(mockPlayerSession);
-      expect(mockListeners[1].onPlayerDisconnected).toHaveBeenCalledWith(mockPlayerSession);
-      expect(mockListeners[2].onPlayerDisconnected).toHaveBeenCalledWith(mockPlayerSession);
+      expect(mockListeners[0].onPlayerDisconnected).toHaveBeenCalledWith(testPlayer);
+      expect(mockListeners[1].onPlayerDisconnected).toHaveBeenCalledWith(testPlayer);
+      expect(mockListeners[2].onPlayerDisconnected).toHaveBeenCalledWith(testPlayer);
 
     });
     it.each(ConfigureTest('RLENP'))('should notify added listeners of new players when addPlayer is called [%s]', async (testConfiguration: string) => {
@@ -111,9 +109,15 @@ describe('CoveyRoomController', () => {
     it.each(ConfigureTest('RLEDE'))('should notify added listeners that the room is destroyed when disconnectAllPlayers is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
 
+      testRoomController2.disconnectAllPlayers();
+
+      expect(mockListeners[0].onRoomDestroyed).toHaveBeenCalledWith(testPlayer);
+
     });
     it.each(ConfigureTest('RLEMVN'))('should not notify removed listeners of player movement when updatePlayerLocation is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
+
+      
 
     });
     it.each(ConfigureTest('RLEDCN'))('should not notify removed listeners of player disconnections when destroySession is called [%s]', async (testConfiguration: string) => {
