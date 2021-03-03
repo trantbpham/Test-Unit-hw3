@@ -21,13 +21,15 @@ TwilioVideo.getInstance = () => ({
   getTokenForRoom: mockGetTokenForRoom,
 });
 
-interface RoomController {
-  addPlayer: (newPlayer: Player) => Promise<PlayerSession>;
-  updatePlayerLocation: (player: Player, location: UserLocation) => void;
-  destroySession: (session: PlayerSession) => void
-}
+const mockListeners = [mock<CoveyRoomListener>(),
+  mock<CoveyRoomListener>(),
+  mock<CoveyRoomListener>()];
 
-const m = mock<RoomController>();
+const testPlayer = new Player('testUser');
+const testRoomController2 = new CoveyRoomController('testRoomID', true);
+testRoomController2.addRoomListener(mockListeners[0]);
+testRoomController2.addRoomListener(mockListeners[1]);
+testRoomController2.addRoomListener(mockListeners[2]);
 
 describe('CoveyRoomController', () => {
   beforeEach(() => {
@@ -48,10 +50,7 @@ describe('CoveyRoomController', () => {
       async (testConfiguration: string) => {
         StartTest(testConfiguration);
         
-        const testPlayer = new Player('testUser');
-        const testRoomController = new CoveyRoomController('testID', true);
-        testRoomController.addPlayer(testPlayer);
-
+        testRoomController2.addPlayer(testPlayer);
         expect(mockGetTokenForRoom).toHaveBeenCalledTimes(1);
 
       });
@@ -59,11 +58,6 @@ describe('CoveyRoomController', () => {
 
   describe('room listeners and events', () => {
     afterEach(() => jest.resetAllMocks());
-    // Set up mock room listeners, you will likely find it useful to use these in the room listener tests.
-    // Feel free to change these lines as you see fit, or leave them and use them as-is
-    const mockListeners = [mock<CoveyRoomListener>(),
-      mock<CoveyRoomListener>(),
-      mock<CoveyRoomListener>()];
     beforeEach(() => {
       mockListeners.forEach(mockReset);
     });
@@ -71,8 +65,6 @@ describe('CoveyRoomController', () => {
     it.each(ConfigureTest('RLEMV'))('should notify added listeners of player movement when updatePlayerLocation is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
       
-      const testPlayer = new Player('testUser');
-      const testRoomController2 = new CoveyRoomController('testRoomID', true);
       const d: Direction = 'front';
       
       const newLocation = {
@@ -82,45 +74,38 @@ describe('CoveyRoomController', () => {
         rotation: d,
       };
 
-      testRoomController2.addPlayer(testPlayer);
-      m.updatePlayerLocation(testPlayer, newLocation);
-  
-      expect(m.updatePlayerLocation).toHaveBeenCalledWith(testPlayer, newLocation);
-      // if (testPlayer.location === {} ) {
-      //   expect(m.updatePlayerLocation).toThrowError('error');
-      // }
+      await testRoomController2.addPlayer(testPlayer);
+      testRoomController2.updatePlayerLocation(testPlayer, newLocation);
+      testRoomController2.updatePlayerLocation(testPlayer, newLocation);
+      testRoomController2.updatePlayerLocation(testPlayer, newLocation);
 
+      expect(mockListeners[0].onPlayerMoved).toHaveBeenCalledWith(newLocation);
+      expect(mockListeners[1].onPlayerMoved).toHaveBeenCalledWith(newLocation);
+      expect(mockListeners[2].onPlayerMoved).toHaveBeenCalledWith(newLocation);
     });
 
 
     it.each(ConfigureTest('RLEDC'))('should notify added listeners of player disconnections when destroySession is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
-      const testPlayer = new Player('testUser');
-      const testRoomController2 = new CoveyRoomController('testRoomID', true);
-      testRoomController2.addPlayer(testPlayer);
 
       const mockPlayerSession = new PlayerSession(testPlayer);
-      m.addPlayer(testPlayer);
 
-      m.destroySession(mockPlayerSession);
-      expect(m.destroySession).toHaveBeenCalledWith(mockPlayerSession);
+      await testRoomController2.addPlayer(testPlayer);
+      testRoomController2.destroySession(mockPlayerSession);
+      
+      expect(mockListeners[0].onPlayerDisconnected).toHaveBeenCalledWith(mockPlayerSession);
+      expect(mockListeners[1].onPlayerDisconnected).toHaveBeenCalledWith(mockPlayerSession);
+      expect(mockListeners[2].onPlayerDisconnected).toHaveBeenCalledWith(mockPlayerSession);
 
     });
     it.each(ConfigureTest('RLENP'))('should notify added listeners of new players when addPlayer is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
 
-      const testPlayer = new Player('testUser');
-      const testRoomController2 = new CoveyRoomController('testRoomID', true);
-      testRoomController2.addPlayer(testPlayer);
-
-      m.addPlayer(testPlayer);
-      if (testPlayer === null) {
-        expect(m.addPlayer).rejects.toThrowError();      
-      }
-
-      expect(m.addPlayer).toHaveBeenLastCalledWith(testPlayer);
-
-
+      await testRoomController2.addPlayer(testPlayer);
+      
+      expect(mockListeners[0].onPlayerJoined).toHaveBeenCalledWith(testPlayer);
+      expect(mockListeners[1].onPlayerJoined).toHaveBeenCalledWith(testPlayer);
+      expect(mockListeners[2].onPlayerJoined).toHaveBeenCalledWith(testPlayer);
 
     });
     it.each(ConfigureTest('RLEDE'))('should notify added listeners that the room is destroyed when disconnectAllPlayers is called [%s]', async (testConfiguration: string) => {
