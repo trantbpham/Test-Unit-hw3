@@ -247,6 +247,14 @@ describe('CoveyRoomController', () => {
     it.each(ConfigureTest('SUBKTDC'))('should reject connections with invalid session tokens by calling disconnect [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
 
+      
+      const connectedPlayer = new Player(`test player ${nanoid()}`);
+      const session = await testingRoom.addPlayer(connectedPlayer);
+      TestUtils.setSessionTokenAndRoomID(testingRoom.coveyRoomID, 'sdfkjl', mockSocket);
+      roomSubscriptionHandler(mockSocket);
+
+      expect(mockSocket.disconnect).toBeCalled(); 
+
       /* Hint: see the beforeEach in the 'with a valid session token' case to see an example of how to configure the
          mock socket and connect it to the room controller
        */
