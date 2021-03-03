@@ -91,9 +91,14 @@ describe('CoveyRoomController', () => {
       testRoomController2.updatePlayerLocation(testPlayer2, newLocation);
       testRoomController2.updatePlayerLocation(testPlayer2, newLocation);
 
+      await testRoomController3.addPlayer(testPlayer3);
+      testRoomController3.updatePlayerLocation(testPlayer3, newLocation);
+      testRoomController3.updatePlayerLocation(testPlayer3, newLocation);
+      testRoomController3.updatePlayerLocation(testPlayer3, newLocation);
+
       expect(mockListeners[0].onPlayerMoved).toHaveBeenCalledWith(testPlayer);
       expect(mockListeners[1].onPlayerMoved).toHaveBeenCalledWith(testPlayer2);
-      expect(mockListeners[2].onPlayerMoved).not.toHaveBeenCalled();
+      expect(mockListeners[2].onPlayerMoved).toHaveBeenCalledWith(testPlayer3);
     });
 
 
@@ -102,14 +107,17 @@ describe('CoveyRoomController', () => {
 
       const mockPlayerSession = new PlayerSession(testPlayer);
       const mockPlayerSession2 = new PlayerSession(testPlayer2);
+      const mockPlayerSession3 = new PlayerSession(testPlayer3);
+
 
       testRoomController1.destroySession(mockPlayerSession);
       testRoomController2.destroySession(mockPlayerSession2);
+      testRoomController3.destroySession(mockPlayerSession3);
 
       
       expect(mockListeners[0].onPlayerDisconnected).toHaveBeenCalledWith(testPlayer);
       expect(mockListeners[1].onPlayerDisconnected).toHaveBeenCalledWith(testPlayer2);
-      expect(mockListeners[2].onPlayerDisconnected).not.toHaveBeenCalled();
+      expect(mockListeners[2].onPlayerDisconnected).toHaveBeenCalledWith(testPlayer3);
 
     });
     it.each(ConfigureTest('RLENP'))('should notify added listeners of new players when addPlayer is called [%s]', async (testConfiguration: string) => {
@@ -117,10 +125,11 @@ describe('CoveyRoomController', () => {
 
       await testRoomController1.addPlayer(testPlayer);
       await testRoomController2.addPlayer(testPlayer2);
+      await testRoomController3.addPlayer(testPlayer3);
       
       expect(mockListeners[0].onPlayerJoined).toHaveBeenCalledWith(testPlayer);
       expect(mockListeners[1].onPlayerJoined).toHaveBeenCalledWith(testPlayer2);
-      expect(mockListeners[2].onPlayerJoined).not.toHaveBeenCalled();
+      expect(mockListeners[2].onPlayerJoined).toHaveBeenCalledWith(testPlayer3);
 
     });
     it.each(ConfigureTest('RLEDE'))('should notify added listeners that the room is destroyed when disconnectAllPlayers is called [%s]', async (testConfiguration: string) => {
@@ -136,10 +145,11 @@ describe('CoveyRoomController', () => {
 
       testRoomController1.disconnectAllPlayers();
       testRoomController2.disconnectAllPlayers();
+      testRoomController3.disconnectAllPlayers();
 
       expect(mockListeners[0].onRoomDestroyed).toHaveBeenCalledTimes(1);
       expect(mockListeners[1].onRoomDestroyed).toHaveBeenCalledTimes(1);
-      expect(mockListeners[2].onRoomDestroyed).toHaveBeenCalledTimes(0);
+      expect(mockListeners[2].onRoomDestroyed).toHaveBeenCalledTimes(1);
 
     });
     it.each(ConfigureTest('RLEMVN'))('should not notify removed listeners of player movement when updatePlayerLocation is called [%s]', async (testConfiguration: string) => {
