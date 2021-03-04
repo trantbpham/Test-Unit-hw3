@@ -63,16 +63,14 @@ describe('RoomServiceApiSocket', () => {
     StartTest(testConfiguration);
     // Create a new room, so that we can make a valid session token
     const validRoom = await apiClient.createRoom({ isPubliclyListed: true, friendlyName: 'Test Room' });
-
-    // Get a valid session token by joining the room
     
-    const { coveySessionToken: hello } = await apiClient.joinRoom({
+    const invalidSession = await apiClient.joinRoom({
       coveyRoomID: validRoom.coveyRoomID,
       userName: nanoid(),
     });
 
-    const { socketDisconnected, socketConnected } = TestUtils.createSocketClient(server, 'hello', nanoid());
-    await socketConnected; // Make sure that the socket actually connects to the server
+    const { socketDisconnected, socketConnected } = TestUtils.createSocketClient(server, 'invalidSession', 'invalidID');
+    await socketConnected; 
     await socketDisconnected;
 
     // Hint: the TestUtils.createSocketClient method is how you should create your socket for testing.
