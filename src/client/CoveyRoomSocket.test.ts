@@ -71,7 +71,7 @@ describe('RoomServiceApiSocket', () => {
       userName: nanoid(),
     });
 
-    const { socketDisconnected, socketConnected } = TestUtils.createSocketClient(server, hello, nanoid());
+    const { socketDisconnected, socketConnected } = TestUtils.createSocketClient(server, 'hello', nanoid());
     await socketConnected; // Make sure that the socket actually connects to the server
     await socketDisconnected;
 
