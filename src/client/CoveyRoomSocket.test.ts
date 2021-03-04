@@ -48,7 +48,7 @@ describe('RoomServiceApiSocket', () => {
 
     // Get a valid session token by joining the room
     const { coveySessionToken: validSessionToken } = await apiClient.joinRoom({
-      coveyRoomID: validRoom.coveyRoomID,
+      coveyRoomID: 'somerandomID',
       userName: nanoid(),
     });
 
