@@ -101,16 +101,34 @@ describe('RoomServiceApiSocket', () => {
   it.each(ConfigureTest('CRSNP'))('Informs all new players when a player joins [%s]', async (testConfiguration: string) => {
     StartTest(testConfiguration);
     const validRoom = await apiClient.createRoom({ isPubliclyListed: true, friendlyName: 'Test Room' });
-    const newUser = new Player('testUser');
-    const newRoomJoinRequest = {
-      userName: newUser.userName,
+    const newUser1 = new Player('testUser');
+    const newUser2 = new Player('testUser1');
+    const newUser3 = new Player('testUser2');
+
+    const newRoomJoinRequest1 = {
+      userName: newUser1.userName,
+      coveyRoomID: validRoom.coveyRoomID,
+    };
+    const newRoomJoinRequest2 = {
+      userName: newUser2.userName,
+      coveyRoomID: validRoom.coveyRoomID,
+    };
+    const newRoomJoinRequest3 = {
+      userName: newUser3.userName,
       coveyRoomID: validRoom.coveyRoomID,
     };
 
-
     const { socketDisconnected, socketConnected } = TestUtils.createSocketClient(server, validRoom.coveyRoomID, nanoid());
     await socketConnected; // Make sure that the socket actually connects to the server
-    const userJoins = await apiClient.joinRoom(newRoomJoinRequest);
+    const userJoins = await apiClient.joinRoom(newRoomJoinRequest1);
+    await socketDisconnected; 
+
+    await socketConnected; // Make sure that the socket actually connects to the server
+    const userJoins2 = await apiClient.joinRoom(newRoomJoinRequest2);
+    await socketDisconnected; 
+
+    await socketConnected; // Make sure that the socket actually connects to the server
+    const userJoins3 = await apiClient.joinRoom(newRoomJoinRequest3);
     await socketDisconnected; 
 
   });
