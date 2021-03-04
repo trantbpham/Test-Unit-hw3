@@ -8,6 +8,9 @@ import * as TestUtils from '../TestUtils';
 import addRoomRoutes from '../router/room';
 import RoomServiceClient from './RoomServiceClient';
 import { ConfigureTest, StartTest } from '../FaultManager';
+import { createSocketClient } from '../TestUtils';
+import Player from '../types/Player';
+import { RoomJoinRequest } from '../requestHandlers/CoveyRoomRequestHandlers';
 
 
 describe('RoomServiceApiSocket', () => {
@@ -65,10 +68,6 @@ describe('RoomServiceApiSocket', () => {
     
     const validRoom = await apiClient.createRoom({ isPubliclyListed: true, friendlyName: 'Test Room' });
     
-    const { coveySessionToken: validSession } = await apiClient.joinRoom({
-      coveyRoomID: validRoom.coveyRoomID,
-      userName: nanoid(),
-    });
 
     const { socketDisconnected, socketConnected } = TestUtils.createSocketClient(server, 'invalid stuffs', validRoom.coveyRoomID);
     await socketConnected; 
@@ -78,22 +77,53 @@ describe('RoomServiceApiSocket', () => {
   });
   it.each(ConfigureTest('CRSMU'))('Dispatches movement updates to all clients in the same room [%s]', async (testConfiguration: string) => {
     StartTest(testConfiguration);
+    const validRoom = await apiClient.createRoom({ isPubliclyListed: true, friendlyName: 'Test Room' });
+    const { coveySessionToken: validSessionToken } = await apiClient.joinRoom({
+      coveyRoomID: validRoom.coveyRoomID,
+      userName: nanoid(),
+    });
+
+    // const updateMovement = await apiClient.updateRoom
+
+    const { socketDisconnected, socketConnected } = TestUtils.createSocketClient(server, 'invalid stuffs', validRoom.coveyRoomID);
+    await socketConnected; 
+    await socketDisconnected;
 
   });
   it.each(ConfigureTest('CRSDC'))('Invalidates the user session after disconnection [%s]', async (testConfiguration: string) => {
     StartTest(testConfiguration);
 
+    const validRoom = await apiClient.createRoom({ isPubliclyListed: true, friendlyName: 'Test Room' });
+
+
+
   });
   it.each(ConfigureTest('CRSNP'))('Informs all new players when a player joins [%s]', async (testConfiguration: string) => {
     StartTest(testConfiguration);
+    const validRoom = await apiClient.createRoom({ isPubliclyListed: true, friendlyName: 'Test Room' });
+    const newUser = new Player('testUser');
+    const newRoomJoinRequest = {
+      userName: newUser.userName,
+      coveyRoomID: validRoom.coveyRoomID,
+    };
+
+
+    const { socketDisconnected, socketConnected } = TestUtils.createSocketClient(server, validRoom.coveyRoomID, nanoid());
+    await socketConnected; // Make sure that the socket actually connects to the server
+    const userJoins = await apiClient.joinRoom(newRoomJoinRequest);
+    await socketDisconnected; 
 
   });
   it.each(ConfigureTest('CRSDCN'))('Informs all players when a player disconnects [%s]', async (testConfiguration: string) => {
     StartTest(testConfiguration);
 
+    const validRoom = await apiClient.createRoom({ isPubliclyListed: true, friendlyName: 'Test Room' });
+
   });
   it.each(ConfigureTest('CRSDCDX'))('Informs all players when the room is destroyed [%s]', async (testConfiguration: string) => {
     StartTest(testConfiguration);
+
+    const validRoom = await apiClient.createRoom({ isPubliclyListed: true, friendlyName: 'Test Room' });
 
   });
 });
