@@ -48,8 +48,8 @@ describe('RoomServiceApiSocket', () => {
 
     // Get a valid session token by joining the room
     const { coveySessionToken: validSessionToken } = await apiClient.joinRoom({
-      coveyRoomID: 'somerandomID',
-      userName: nanoid(),
+      coveyRoomID: 'invalid',
+      userName: validRoom.coveyRoomID,
     });
 
     // Connect with a valid session token, but an invalid room ID
@@ -57,15 +57,22 @@ describe('RoomServiceApiSocket', () => {
     await socketConnected; // Make sure that the socket actually connects to the server
     await socketDisconnected; // If the server rejects our CoveyRoomID, it will disconnect our socket, and this promise will shortly resolve
     // This test will fail by timing out (in the event that the socket doesn't disconnect)
+
   });
   it.each(ConfigureTest('CRSST'))('Rejects invalid session tokens, even if otherwise valid room id [%s]', async (testConfiguration: string) => {
     StartTest(testConfiguration);
-    try {
-      expect(1).toBe(2);
-      // fail('I called fail!');
-    } catch (e) {
-      console.log('jk, lets not fail the test');
-    }
+    const validRoom = await apiClient.createRoom({ isPubliclyListed: true, friendlyName: 'Test Room' });
+
+    // Get a valid session token by joining the room
+    await apiClient.joinRoom({
+      coveyRoomID: validRoom.coveyRoomID,
+      userName: nanoid(),
+    });
+
+    // Connect with a valid session token, but an invalid room ID
+    const { socketDisconnected, socketConnected } = TestUtils.createSocketClient(server, 'invalid', nanoid());
+    await socketConnected; // Make sure that the socket actually connects to the server
+    await socketDisconnected;
 
     // Hint: the TestUtils.createSocketClient method is how you should create your socket for testing.
   });
