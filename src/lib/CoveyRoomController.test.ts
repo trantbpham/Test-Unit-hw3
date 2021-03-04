@@ -315,10 +315,7 @@ describe('CoveyRoomController', () => {
            */
         it.each(ConfigureTest('SUBDCRL'))('should remove the room listener for that socket, and stop sending events to it [%s]', async (testConfiguration: string) => {
           StartTest(testConfiguration);
-          const connectedPlayer1 = new Player(`test player ${nanoid()}`);
-          const session = await testingRoom.addPlayer(connectedPlayer1);
-          TestUtils.setSessionTokenAndRoomID(testingRoom.friendlyName, session.sessionToken, mockSocket);
-          roomSubscriptionHandler(mockSocket);
+
           // console.log(mockSocket.mock.calls);
           expect(mockSocket.disconnected).toBeTruthy();
  
