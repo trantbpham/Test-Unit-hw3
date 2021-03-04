@@ -119,19 +119,18 @@ describe('RoomServiceApiSocket', () => {
     };
 
     const { socketDisconnected, socketConnected } = TestUtils.createSocketClient(server, validRoom.coveyRoomID, nanoid());
+    const socketConnected2 = TestUtils.createSocketClient(server, validRoom.coveyRoomID, nanoid());
+    const socketConnected3 = TestUtils.createSocketClient(server, validRoom.coveyRoomID, nanoid());
+
     await socketConnected; // Make sure that the socket actually connects to the server
     const userJoins = await apiClient.joinRoom(newRoomJoinRequest1);
-    await socketDisconnected; 
-
-    await socketConnected; // Make sure that the socket actually connects to the server
+    await socketConnected2.socketConnected;
     const userJoins2 = await apiClient.joinRoom(newRoomJoinRequest2);
-    await socketDisconnected; 
-
-    await socketConnected; // Make sure that the socket actually connects to the server
+    await socketConnected3.socketConnected; // Make sure that the socket actually connects to the server
     const userJoins3 = await apiClient.joinRoom(newRoomJoinRequest3);
-    await socketDisconnected; 
 
   });
+
   it.each(ConfigureTest('CRSDCN'))('Informs all players when a player disconnects [%s]', async (testConfiguration: string) => {
     StartTest(testConfiguration);
 
