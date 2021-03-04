@@ -272,7 +272,6 @@ describe('CoveyRoomController', () => {
       });
       it.each(ConfigureTest('SUBNP'))('should add a room listener, which should emit "newPlayer" to the socket when a player joins [%s]', async (testConfiguration: string) => {
         StartTest(testConfiguration);
-
         const newTestPlayer = new Player('testUser');
         await testingRoom.addPlayer(newTestPlayer);
         expect(mockSocket.emit).toBeCalled(); 
@@ -281,7 +280,6 @@ describe('CoveyRoomController', () => {
       });
       it.each(ConfigureTest('SUBMV'))('should add a room listener, which should emit "playerMoved" to the socket when a player moves [%s]', async (testConfiguration: string) => {
         StartTest(testConfiguration);
-
         const newTestPlayer = new Player('testUser');
         const d: Direction = 'front';
         const newLocation = {
@@ -297,7 +295,6 @@ describe('CoveyRoomController', () => {
       });
       it.each(ConfigureTest('SUBDC'))('should add a room listener, which should emit "playerDisconnect" to the socket when a player disconnects [%s]', async (testConfiguration: string) => {
         StartTest(testConfiguration);
-
         const newTestPlayer = new Player('testUser');
         const mockPlayerSession = new PlayerSession(newTestPlayer);
 
@@ -307,7 +304,6 @@ describe('CoveyRoomController', () => {
       });
       it.each(ConfigureTest('SUBRC'))('should add a room listener, which should emit "roomClosing" to the socket and disconnect it when disconnectAllPlayers is called [%s]', async (testConfiguration: string) => {
         StartTest(testConfiguration);
-
         testingRoom.disconnectAllPlayers();
         expect(mockSocket.emit).toBeCalled(); 
 
@@ -323,9 +319,9 @@ describe('CoveyRoomController', () => {
           const session = await testingRoom.addPlayer(connectedPlayer1);
           TestUtils.setSessionTokenAndRoomID(testingRoom.friendlyName, session.sessionToken, mockSocket);
           roomSubscriptionHandler(mockSocket);
-    
-          expect(mockSocket.disconnect).toBeCalled();
-    
+          console.log(mockSocket.mock.calls);
+          expect(mockSocket.disconnected).toBeTruthy();
+ 
         });
         it.each(ConfigureTest('SUBDCSE'))('should destroy the session corresponding to that socket [%s]', async (testConfiguration: string) => {
           StartTest(testConfiguration);
