@@ -61,15 +61,15 @@ describe('RoomServiceApiSocket', () => {
   });
   it.each(ConfigureTest('CRSST'))('Rejects invalid session tokens, even if otherwise valid room id [%s]', async (testConfiguration: string) => {
     StartTest(testConfiguration);
+    // Create a new room, so that we can make a valid session token
     const validRoom = await apiClient.createRoom({ isPubliclyListed: true, friendlyName: 'Test Room' });
 
     // Get a valid session token by joining the room
-    await apiClient.joinRoom({
+    const { coveySessionToken: validSessionToken } = await apiClient.joinRoom({
       coveyRoomID: validRoom.coveyRoomID,
       userName: nanoid(),
     });
 
-    // Connect with a valid session token, but an invalid room ID
     const { socketDisconnected, socketConnected } = TestUtils.createSocketClient(server, 'invalid', nanoid());
     await socketConnected; // Make sure that the socket actually connects to the server
     await socketDisconnected;
