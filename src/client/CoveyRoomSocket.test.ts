@@ -65,12 +65,13 @@ describe('RoomServiceApiSocket', () => {
     const validRoom = await apiClient.createRoom({ isPubliclyListed: true, friendlyName: 'Test Room' });
 
     // Get a valid session token by joining the room
-    const { coveySessionToken: validSessionToken } = await apiClient.joinRoom({
+    
+    const { coveySessionToken: hello } = await apiClient.joinRoom({
       coveyRoomID: validRoom.coveyRoomID,
       userName: nanoid(),
     });
 
-    const { socketDisconnected, socketConnected } = TestUtils.createSocketClient(server, 'invalid', nanoid());
+    const { socketDisconnected, socketConnected } = TestUtils.createSocketClient(server, hello, nanoid());
     await socketConnected; // Make sure that the socket actually connects to the server
     await socketDisconnected;
 
