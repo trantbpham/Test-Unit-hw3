@@ -319,7 +319,7 @@ describe('CoveyRoomController', () => {
           const session = await testingRoom.addPlayer(connectedPlayer1);
           TestUtils.setSessionTokenAndRoomID(testingRoom.friendlyName, session.sessionToken, mockSocket);
           roomSubscriptionHandler(mockSocket);
-          console.log(mockSocket.mock.calls);
+          // console.log(mockSocket.mock.calls);
           expect(mockSocket.disconnected).toBeTruthy();
  
         });
