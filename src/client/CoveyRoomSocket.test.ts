@@ -134,7 +134,6 @@ describe('RoomServiceApiSocket', () => {
     await socketConnected2.socketConnected;
     await socketConnected3.socketConnected; // Make sure that the socket actually connects to the server
     
-    await socketConnected3.socketDisconnected;
     await socketConnected1.newPlayerJoined;
     await socketConnected2.newPlayerJoined; 
 
@@ -161,7 +160,7 @@ describe('RoomServiceApiSocket', () => {
       coveyRoomID: validRoom.coveyRoomID,
     };
 
-    const { socketDisconnected, socketConnected } = TestUtils.createSocketClient(server, , nanoid());
+    // const { socketDisconnected, socketConnected } = TestUtils.createSocketClient(server, , nanoid());
     const socketConnected2 = TestUtils.createSocketClient(server, validRoom.coveyRoomID, nanoid());
     const socketConnected3 = TestUtils.createSocketClient(server, validRoom.coveyRoomID, nanoid());
   });
