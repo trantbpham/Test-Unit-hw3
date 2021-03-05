@@ -9,8 +9,6 @@ import addRoomRoutes from '../router/room';
 import RoomServiceClient from './RoomServiceClient';
 import { ConfigureTest, StartTest } from '../FaultManager';
 import Player from '../types/Player';
-import { RoomDeleteRequest } from '../requestHandlers/CoveyRoomRequestHandlers';
-
 
 describe('RoomServiceApiSocket', () => {
   /* A testing server that will be deployed before testing and reused throughout all of the tests */
