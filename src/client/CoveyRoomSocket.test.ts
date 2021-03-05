@@ -9,6 +9,7 @@ import addRoomRoutes from '../router/room';
 import RoomServiceClient from './RoomServiceClient';
 import { ConfigureTest, StartTest } from '../FaultManager';
 import Player from '../types/Player';
+import { RoomDeleteRequest } from '../requestHandlers/CoveyRoomRequestHandlers';
 
 
 describe('RoomServiceApiSocket', () => {
@@ -292,7 +293,17 @@ describe('RoomServiceApiSocket', () => {
     await socketConnected2.socketConnected;
     await socketConnected3.socketConnected;
 
-    // await socketConnected1.
+    const roomDeleteRequest = {
+      coveyRoomID: validRoom.coveyRoomID,
+      coveyRoomPassword: validRoom.coveyRoomPassword,
+    };
+
+    await apiClient.deleteRoom(roomDeleteRequest);
+
+    await socketConnected1.socketDisconnected;
+    await socketConnected2.socketDisconnected;
+    await socketConnected3.socketDisconnected;
+
 
   });
 });
