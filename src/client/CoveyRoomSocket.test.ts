@@ -55,11 +55,9 @@ describe('RoomServiceApiSocket', () => {
       userName: nanoid(),
     });
 
-    // Connect with a valid session token, but an invalid room ID
     const { socketDisconnected, socketConnected } = TestUtils.createSocketClient(server, validSessionToken, nanoid());
-    await socketConnected; // Make sure that the socket actually connects to the server
-    await socketDisconnected; // If the server rejects our CoveyRoomID, it will disconnect our socket, and this promise will shortly resolve
-    // This test will fail by timing out (in the event that the socket doesn't disconnect)
+    await socketConnected; 
+    await socketDisconnected; 
 
   });
   it.each(ConfigureTest('CRSST'))('Rejects invalid session tokens, even if otherwise valid room id [%s]', async (testConfiguration: string) => {
@@ -123,12 +121,12 @@ describe('RoomServiceApiSocket', () => {
     };
 
     const socketConnected1 = TestUtils.createSocketClient(server, validSessionToken, validRoom.coveyRoomID);
-    const socketConnected2 = TestUtils.createSocketClient(server, validRoom.coveyRoomID, nanoid());
-    const socketConnected3 = TestUtils.createSocketClient(server, validRoom.coveyRoomID, nanoid());
+    const socketConnected2 = TestUtils.createSocketClient(server, validSessionToken, validRoom.coveyRoomID);
+    const socketConnected3 = TestUtils.createSocketClient(server, validSessionToken, validRoom.coveyRoomID);
 
-    const userJoins = await apiClient.joinRoom(newRoomJoinRequest1);
-    const userJoins2 = await apiClient.joinRoom(newRoomJoinRequest2);
-    const userJoins3 = await apiClient.joinRoom(newRoomJoinRequest3);
+    await apiClient.joinRoom(newRoomJoinRequest1);
+    await apiClient.joinRoom(newRoomJoinRequest2);
+    await apiClient.joinRoom(newRoomJoinRequest3);
 
     await socketConnected1.socketConnected; // Make sure that the socket actually connects to the server
     await socketConnected2.socketConnected;
@@ -143,7 +141,17 @@ describe('RoomServiceApiSocket', () => {
   it.each(ConfigureTest('CRSDCN'))('Informs all players when a player disconnects [%s]', async (testConfiguration: string) => {
     StartTest(testConfiguration);
     const validRoom = await apiClient.createRoom({ isPubliclyListed: true, friendlyName: 'Test Room' });
-    const { coveySessionToken: validSessionToken } = await apiClient.joinRoom({
+    const { coveySessionToken: validSessionToken1 } = await apiClient.joinRoom({
+      coveyRoomID: validRoom.coveyRoomID,
+      userName: nanoid(),
+    });
+
+    const { coveySessionToken: validSessionToken2 } = await apiClient.joinRoom({
+      coveyRoomID: validRoom.coveyRoomID,
+      userName: nanoid(),
+    });
+
+    const { coveySessionToken: validSessionToken3 } = await apiClient.joinRoom({
       coveyRoomID: validRoom.coveyRoomID,
       userName: nanoid(),
     });
@@ -164,9 +172,13 @@ describe('RoomServiceApiSocket', () => {
       coveyRoomID: validRoom.coveyRoomID,
     };
 
-    const socketConnected1 = TestUtils.createSocketClient(server, validSessionToken, validRoom.coveyRoomID);
-    const socketConnected2 = TestUtils.createSocketClient(server, validRoom.coveyRoomID, nanoid());
-    const socketConnected3 = TestUtils.createSocketClient(server, validRoom.coveyRoomID, nanoid());
+    const socketConnected1 = TestUtils.createSocketClient(server, validSessionToken1, validRoom.coveyRoomID);
+    const socketConnected2 = TestUtils.createSocketClient(server, validSessionToken2, validRoom.coveyRoomID);
+    const socketConnected3 = TestUtils.createSocketClient(server, validSessionToken3, validRoom.coveyRoomID);
+
+    await apiClient.joinRoom(newRoomJoinRequest1);
+    await apiClient.joinRoom(newRoomJoinRequest2);
+    await apiClient.joinRoom(newRoomJoinRequest3);
 
     await socketConnected1.socketConnected;
     await socketConnected2.socketConnected;
