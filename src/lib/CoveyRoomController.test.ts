@@ -26,10 +26,6 @@ const mockListeners = [mock<CoveyRoomListener>(),
   mock<CoveyRoomListener>(),
   mock<CoveyRoomListener>()];
 
-
-
-
-
 describe('CoveyRoomController', () => {
   beforeEach(() => {
     // Reset any logged invocations of getTokenForRoom before each test
@@ -178,15 +174,20 @@ describe('CoveyRoomController', () => {
     it.each(ConfigureTest('RLENPN'))('should not notify removed listeners of new players when addPlayer is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
 
-      await testRoomController2.addPlayer(testPlayer);
+    
+      testRoomController2.addRoomListener(mockListeners[0]);
+      testRoomController2.addRoomListener(mockListeners[1]);
+      testRoomController2.addRoomListener(mockListeners[2]);
 
       testRoomController2.removeRoomListener(mockListeners[0]);
       testRoomController2.removeRoomListener(mockListeners[1]);
       testRoomController2.removeRoomListener(mockListeners[2]);
 
-      expect(mockListeners[0].onPlayerDisconnected).not.toHaveBeenCalled();
-      expect(mockListeners[1].onPlayerDisconnected).not.toHaveBeenCalled();
-      expect(mockListeners[2].onPlayerDisconnected).not.toHaveBeenCalled();
+      await testRoomController2.addPlayer(testPlayer);
+
+      expect(mockListeners[0].onPlayerJoined).not.toHaveBeenCalled();
+      expect(mockListeners[1].onPlayerJoined).not.toHaveBeenCalled();
+      expect(mockListeners[2].onPlayerJoined).not.toHaveBeenCalled();
 
 
     });
