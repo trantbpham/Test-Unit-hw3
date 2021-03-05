@@ -334,6 +334,18 @@ describe('CoveyRoomController', () => {
         it.each(ConfigureTest('SUBDCSE'))('should destroy the session corresponding to that socket [%s]', async (testConfiguration: string) => {
           StartTest(testConfiguration);
 
+          const connectedPlayer1 = new Player(`test player ${nanoid()}`);
+          const session = await testingRoom.addPlayer(connectedPlayer1);
+          TestUtils.setSessionTokenAndRoomID(testingRoom.friendlyName, session.sessionToken, mockSocket);
+      
+          const mockSpy = jest.spyOn(testingRoom, 'destroySession');
+
+          const mockFunction = mockSocket.on.mock.calls[0][1];
+
+          mockFunction();
+          expect(mockSocket.on).toBeCalledWith('disconnect', mockFunction);
+          expect(mockSpy).toBeCalled();
+
         });
       });
       it.each(ConfigureTest('SUBMVL'))('should forward playerMovement events from the socket to subscribed listeners [%s]', async (testConfiguration: string) => {
@@ -357,7 +369,6 @@ describe('CoveyRoomController', () => {
         const mockListenersList = [mock<CoveyRoomListener>(),
           mock<CoveyRoomListener>(),
           mock<CoveyRoomListener>()];
-
 
         mockListenersList.forEach(mockListener => testingRoom.addRoomListener(mockListener));
         mockFunction(newLocation);
