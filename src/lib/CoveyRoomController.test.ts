@@ -11,6 +11,7 @@ import * as TestUtils from '../TestUtils';
 import { ConfigureTest, StartTest } from '../FaultManager';
 import { UserLocation, Direction } from '../CoveyTypes';
 import PlayerSession from '../types/PlayerSession';
+import { removeAllListeners } from 'process';
 
 // Set up a manual mock for the getTokenForRoom function in TwilioVideo
 jest.mock('./TwilioVideo');
@@ -313,12 +314,21 @@ describe('CoveyRoomController', () => {
         /* Hint: find the on('disconnect') handler that CoveyRoomController registers on the socket, and then
            call that handler directly to simulate a real socket disconnecting.
            */
+
         it.each(ConfigureTest('SUBDCRL'))('should remove the room listener for that socket, and stop sending events to it [%s]', async (testConfiguration: string) => {
           StartTest(testConfiguration);
+          const connectedPlayer1 = new Player(`test player ${nanoid()}`);
+          const session = await testingRoom.addPlayer(connectedPlayer1);
+          TestUtils.setSessionTokenAndRoomID(testingRoom.friendlyName, session.sessionToken, mockSocket);
+      
+          const mockSpy = jest.spyOn(testingRoom, 'removeRoomListener');
 
-          // console.log(mockSocket.mock.calls);
-          expect(mockSocket.disconnected).toBeTruthy();
- 
+          const mockFunction = mockSocket.on.mock.calls[0][1];
+
+          mockFunction();
+          expect(mockSocket.disconnect);
+          expect(mockSpy).toBeCalled;
+
         });
         it.each(ConfigureTest('SUBDCSE'))('should destroy the session corresponding to that socket [%s]', async (testConfiguration: string) => {
           StartTest(testConfiguration);
