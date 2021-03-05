@@ -326,8 +326,8 @@ describe('CoveyRoomController', () => {
           const mockFunction = mockSocket.on.mock.calls[0][1];
 
           mockFunction();
-          expect(mockSocket.disconnect);
-          expect(mockSpy).toBeCalled;
+          expect(mockSocket.on).toBeCalledWith('disconnect', mockFunction);
+          expect(mockSpy).toBeCalled();
 
         });
         it.each(ConfigureTest('SUBDCSE'))('should destroy the session corresponding to that socket [%s]', async (testConfiguration: string) => {
@@ -338,9 +338,31 @@ describe('CoveyRoomController', () => {
       it.each(ConfigureTest('SUBMVL'))('should forward playerMovement events from the socket to subscribed listeners [%s]', async (testConfiguration: string) => {
         StartTest(testConfiguration);
 
-        /* Hint: find the on('playerMovement') handler that CoveyRoomController registers on the socket, and then
-           call that handler directly to simulate a real socket sending a user's movement event.
-           */
+        const connectedPlayer1 = new Player(`test player ${nanoid()}`);
+        const session = await testingRoom.addPlayer(connectedPlayer1);
+        TestUtils.setSessionTokenAndRoomID(testingRoom.friendlyName, session.sessionToken, mockSocket);
+    
+        const d: Direction = 'front';
+        const newLocation = {
+          x: 0,
+          y: 2,
+          moving: true,
+          rotation: d,
+        };
+
+        const mockSpy = jest.spyOn(testingRoom, 'removeRoomListener');
+        const mockFunction = mockSocket.on.mock.calls[1][1];
+        
+        const mockListenersList = [mock<CoveyRoomListener>(),
+          mock<CoveyRoomListener>(),
+          mock<CoveyRoomListener>()];
+
+
+        mockListenersList.forEach(mockListener => testingRoom.addRoomListener(mockListener));
+        mockFunction(newLocation);
+        expect(mockListenersList[0].onPlayerMoved).toBeCalled();
+        expect(mockListenersList[1].onPlayerMoved).toBeCalled();
+        expect(mockListenersList[2].onPlayerMoved).toBeCalled();
       });
     });
   });
