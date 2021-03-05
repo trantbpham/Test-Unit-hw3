@@ -8,9 +8,7 @@ import * as TestUtils from '../TestUtils';
 import addRoomRoutes from '../router/room';
 import RoomServiceClient from './RoomServiceClient';
 import { ConfigureTest, StartTest } from '../FaultManager';
-import { createSocketClient } from '../TestUtils';
 import Player from '../types/Player';
-import { RoomJoinRequest } from '../requestHandlers/CoveyRoomRequestHandlers';
 
 
 describe('RoomServiceApiSocket', () => {
@@ -294,9 +292,7 @@ describe('RoomServiceApiSocket', () => {
     await socketConnected2.socketConnected;
     await socketConnected3.socketConnected;
 
-    
-    // await socketConnected1.;
-    //await socketConnected3.;
+    // await socketConnected1.
 
   });
 });
