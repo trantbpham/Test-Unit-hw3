@@ -75,17 +75,40 @@ describe('RoomServiceApiSocket', () => {
   });
   it.each(ConfigureTest('CRSMU'))('Dispatches movement updates to all clients in the same room [%s]', async (testConfiguration: string) => {
     StartTest(testConfiguration);
+
+    const newUser1 = new Player('testUser');
+    const newUser2 = new Player('testUser1');
+    const newUser3 = new Player('testUser2');
+
     const validRoom = await apiClient.createRoom({ isPubliclyListed: true, friendlyName: 'Test Room' });
-    const { coveySessionToken: validSessionToken } = await apiClient.joinRoom({
+    const { coveySessionToken: validSessionToken1 } = await apiClient.joinRoom({
       coveyRoomID: validRoom.coveyRoomID,
-      userName: nanoid(),
+      userName: newUser1.userName,
     });
 
-    // const updateMovement = await apiClient.updateRoom
+    const { coveySessionToken: validSessionToken2 } = await apiClient.joinRoom({
+      coveyRoomID: validRoom.coveyRoomID,
+      userName: newUser2.userName,
+    });
 
-    const { socketDisconnected, socketConnected } = TestUtils.createSocketClient(server, 'invalid stuffs', validRoom.coveyRoomID);
-    await socketConnected; 
-    await socketDisconnected;
+    const { coveySessionToken: validSessionToken3 } = await apiClient.joinRoom({
+      coveyRoomID: validRoom.coveyRoomID,
+      userName: newUser3.userName,
+    });
+
+    const socketConnected1 = TestUtils.createSocketClient(server, validSessionToken1, validRoom.coveyRoomID);
+    const socketConnected2 = TestUtils.createSocketClient(server, validSessionToken2, validRoom.coveyRoomID);
+    const socketConnected3 = TestUtils.createSocketClient(server, validSessionToken3, validRoom.coveyRoomID);
+
+    await socketConnected1.socketConnected;
+    await socketConnected2.socketConnected;
+    await socketConnected3.socketConnected;
+
+    socketConnected1.socket.emit('playerMovement', newUser1);
+
+    await socketConnected2.playerMoved;
+    await socketConnected3.playerMoved;
+
 
   });
   it.each(ConfigureTest('CRSDC'))('Invalidates the user session after disconnection [%s]', async (testConfiguration: string) => {
@@ -128,9 +151,9 @@ describe('RoomServiceApiSocket', () => {
     await apiClient.joinRoom(newRoomJoinRequest2);
     await apiClient.joinRoom(newRoomJoinRequest3);
 
-    await socketConnected1.socketConnected; // Make sure that the socket actually connects to the server
+    await socketConnected1.socketConnected;
     await socketConnected2.socketConnected;
-    await socketConnected3.socketConnected; // Make sure that the socket actually connects to the server
+    await socketConnected3.socketConnected; 
     
     await socketConnected1.newPlayerJoined;
     await socketConnected2.newPlayerJoined; 
@@ -192,39 +215,53 @@ describe('RoomServiceApiSocket', () => {
   it.each(ConfigureTest('CRSDCDX'))('Informs all players when the room is destroyed [%s]', async (testConfiguration: string) => {
     StartTest(testConfiguration);
 
-    // const validRoom = await apiClient.createRoom({ isPubliclyListed: true, friendlyName: 'Test Room' });
-    // const { coveySessionToken: validSessionToken } = await apiClient.joinRoom({
-    //   coveyRoomID: validRoom.coveyRoomID,
-    //   userName: nanoid(),
-    // });
-    // const newUser1 = new Player('testUser');
-    // const newUser2 = new Player('testUser1');
-    // const newUser3 = new Player('testUser2');
+    const validRoom = await apiClient.createRoom({ isPubliclyListed: true, friendlyName: 'Test Room' });
+    const { coveySessionToken: validSessionToken1 } = await apiClient.joinRoom({
+      coveyRoomID: validRoom.coveyRoomID,
+      userName: nanoid(),
+    });
 
-    // const newRoomJoinRequest1 = {
-    //   userName: newUser1.userName,
-    //   coveyRoomID: validRoom.coveyRoomID,
-    // };
-    // const newRoomJoinRequest2 = {
-    //   userName: newUser2.userName,
-    //   coveyRoomID: validRoom.coveyRoomID,
-    // };
-    // const newRoomJoinRequest3 = {
-    //   userName: newUser3.userName,
-    //   coveyRoomID: validRoom.coveyRoomID,
-    // };
+    const { coveySessionToken: validSessionToken2 } = await apiClient.joinRoom({
+      coveyRoomID: validRoom.coveyRoomID,
+      userName: nanoid(),
+    });
 
-    // const socketConnected1 = TestUtils.createSocketClient(server, validSessionToken, validRoom.coveyRoomID);
-    // const socketConnected2 = TestUtils.createSocketClient(server, validRoom.coveyRoomID, nanoid());
-    // const socketConnected3 = TestUtils.createSocketClient(server, validRoom.coveyRoomID, nanoid());
+    const { coveySessionToken: validSessionToken3 } = await apiClient.joinRoom({
+      coveyRoomID: validRoom.coveyRoomID,
+      userName: nanoid(),
+    });
+    const newUser1 = new Player('testUser');
+    const newUser2 = new Player('testUser1');
+    const newUser3 = new Player('testUser2');
 
-    // await socketConnected1.socketConnected; // Make sure that the socket actually connects to the server
-    // await socketConnected2.socketConnected;
-    // await socketConnected3.socketConnected; // Make sure that the socket actually connects to the server
+    const newRoomJoinRequest1 = {
+      userName: newUser1.userName,
+      coveyRoomID: validRoom.coveyRoomID,
+    };
+    const newRoomJoinRequest2 = {
+      userName: newUser2.userName,
+      coveyRoomID: validRoom.coveyRoomID,
+    };
+    const newRoomJoinRequest3 = {
+      userName: newUser3.userName,
+      coveyRoomID: validRoom.coveyRoomID,
+    };
 
-    // await socketConnected2.playerDisconnected;
+    const socketConnected1 = TestUtils.createSocketClient(server, validSessionToken1, validRoom.coveyRoomID);
+    const socketConnected2 = TestUtils.createSocketClient(server, validSessionToken2, validRoom.coveyRoomID);
+    const socketConnected3 = TestUtils.createSocketClient(server, validSessionToken3, validRoom.coveyRoomID);
 
+    await apiClient.joinRoom(newRoomJoinRequest1);
+    await apiClient.joinRoom(newRoomJoinRequest2);
+    await apiClient.joinRoom(newRoomJoinRequest3);
 
-    // socketConnected2.socketDisconnected;
+    await socketConnected1.socketConnected;
+    await socketConnected2.socketConnected;
+    await socketConnected3.socketConnected;
+    socketConnected2.socket.disconnect();
+
+    // await socketConnected1.;
+    await socketConnected3.playerDisconnected;
+
   });
 });
