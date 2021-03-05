@@ -6,12 +6,11 @@ import CoveyRoomListener from '../types/CoveyRoomListener';
 import CoveyRoomController from './CoveyRoomController';
 import CoveyRoomsStore from './CoveyRoomsStore';
 import Player from '../types/Player';
-import { roomSubscriptionHandler, RoomUpdateRequest } from '../requestHandlers/CoveyRoomRequestHandlers';
+import { roomSubscriptionHandler } from '../requestHandlers/CoveyRoomRequestHandlers';
 import * as TestUtils from '../TestUtils';
 import { ConfigureTest, StartTest } from '../FaultManager';
-import { UserLocation, Direction } from '../CoveyTypes';
+import { Direction } from '../CoveyTypes';
 import PlayerSession from '../types/PlayerSession';
-import { removeAllListeners } from 'process';
 
 // Set up a manual mock for the getTokenForRoom function in TwilioVideo
 jest.mock('./TwilioVideo');
@@ -231,17 +230,7 @@ describe('CoveyRoomController', () => {
 
       expect(mockSocket.disconnect).toBeCalled();
 
-     
-
-      /* Hint: see the beforeEach in the 'with a valid session token' case to see an example of how to configure the
-         mock socket and connect it to the room controller
-       */
-
-      // mock socket is the coveyRoomListener
-      // setSessionTokenAndRoomID and pass in the wrong roomID or token and make sure it like catches
-
-
-
+    
 
     });
     it.each(ConfigureTest('SUBKTDC'))('should reject connections with invalid session tokens by calling disconnect [%s]', async (testConfiguration: string) => {
@@ -256,12 +245,6 @@ describe('CoveyRoomController', () => {
        */
     });
     describe('with a valid session token', () => {
-      /*
-        Ripley says that you might find this helper code useful: it will create a valid session, configure the mock socket
-        to identify itself with those tokens, and then calls the roomSubscriptionHandler on the mock socket.
-
-        Your tests should perform operations on testingRoom, and make expectations about what happens to the mock socket.
-       */
       let connectedPlayer;
       beforeEach(async () => {
         connectedPlayer = new Player(`test player ${nanoid()}`);
@@ -310,10 +293,7 @@ describe('CoveyRoomController', () => {
 
       });
       describe('when a socket disconnect event is fired', () => {
-        /* Hint: find the on('disconnect') handler that CoveyRoomController registers on the socket, and then
-           call that handler directly to simulate a real socket disconnecting.
-           */
-
+        
         it.each(ConfigureTest('SUBDCRL'))('should remove the room listener for that socket, and stop sending events to it [%s]', async (testConfiguration: string) => {
           StartTest(testConfiguration);
           const connectedPlayer1 = new Player(`test player ${nanoid()}`);
@@ -361,7 +341,6 @@ describe('CoveyRoomController', () => {
           rotation: d,
         };
 
-        const mockSpy = jest.spyOn(testingRoom, 'removeRoomListener');
         const mockFunction = mockSocket.on.mock.calls[1][1];
         
         const mockListenersList = [mock<CoveyRoomListener>(),
