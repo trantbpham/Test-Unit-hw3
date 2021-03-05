@@ -116,8 +116,43 @@ describe('RoomServiceApiSocket', () => {
 
     const validRoom = await apiClient.createRoom({ isPubliclyListed: true, friendlyName: 'Test Room' });
 
+    const { coveySessionToken: validSessionToken } = await apiClient.joinRoom({
+      coveyRoomID: validRoom.coveyRoomID,
+      userName: nanoid(),
+    });
+    const newUser1 = new Player('testUser');
+    const newUser2 = new Player('testUser1');
+    const newUser3 = new Player('testUser2');
 
+    const newRoomJoinRequest1 = {
+      userName: newUser1.userName,
+      coveyRoomID: validRoom.coveyRoomID,
+    };
+    const newRoomJoinRequest2 = {
+      userName: newUser2.userName,
+      coveyRoomID: validRoom.coveyRoomID,
+    };
+    const newRoomJoinRequest3 = {
+      userName: newUser3.userName,
+      coveyRoomID: validRoom.coveyRoomID,
+    };
 
+    const socketConnected1 = TestUtils.createSocketClient(server, validSessionToken, validRoom.coveyRoomID);
+    const socketConnected2 = TestUtils.createSocketClient(server, validSessionToken, validRoom.coveyRoomID);
+    const socketConnected3 = TestUtils.createSocketClient(server, validSessionToken, validRoom.coveyRoomID);
+
+    await apiClient.joinRoom(newRoomJoinRequest1);
+    await apiClient.joinRoom(newRoomJoinRequest2);
+    await apiClient.joinRoom(newRoomJoinRequest3);
+
+    await socketConnected1.socketConnected;
+    await socketConnected2.socketConnected;
+    await socketConnected3.socketConnected; 
+    
+    socketConnected1.socket.disconnect();
+
+    await socketConnected2.playerDisconnected;
+    await socketConnected3.playerDisconnected;
   });
   it.each(ConfigureTest('CRSNP'))('Informs all new players when a player joins [%s]', async (testConfiguration: string) => {
     StartTest(testConfiguration);
@@ -258,10 +293,10 @@ describe('RoomServiceApiSocket', () => {
     await socketConnected1.socketConnected;
     await socketConnected2.socketConnected;
     await socketConnected3.socketConnected;
-    socketConnected2.socket.disconnect();
 
+    
     // await socketConnected1.;
-    await socketConnected3.playerDisconnected;
+    //await socketConnected3.;
 
   });
 });
