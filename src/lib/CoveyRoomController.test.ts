@@ -131,7 +131,6 @@ describe('CoveyRoomController', () => {
     it.each(ConfigureTest('RLEMVN'))('should not notify removed listeners of player movement when updatePlayerLocation is called [%s]', async (testConfiguration: string) => {
       StartTest(testConfiguration);
       const d: Direction = 'front';
-      
       const newLocation = {
         x: 0,
         y: 2,
@@ -139,18 +138,17 @@ describe('CoveyRoomController', () => {
         rotation: d,
       };
 
-      await testRoomController2.addPlayer(testPlayer);
-      testRoomController2.updatePlayerLocation(testPlayer, newLocation);
-      testRoomController2.updatePlayerLocation(testPlayer, newLocation);
-      testRoomController2.updatePlayerLocation(testPlayer, newLocation);
-
       testRoomController2.removeRoomListener(mockListeners[0]);
       testRoomController2.removeRoomListener(mockListeners[1]);
       testRoomController2.removeRoomListener(mockListeners[2]);
 
-      expect(mockListeners[0].onPlayerDisconnected).not.toHaveBeenCalled();
-      expect(mockListeners[1].onPlayerDisconnected).not.toHaveBeenCalled();
-      expect(mockListeners[2].onPlayerDisconnected).not.toHaveBeenCalled();
+      testRoomController2.updatePlayerLocation(testPlayer, newLocation);
+      testRoomController2.updatePlayerLocation(testPlayer, newLocation);
+      testRoomController2.updatePlayerLocation(testPlayer, newLocation);
+
+      expect(mockListeners[0].onPlayerMoved).not.toHaveBeenCalled();
+      expect(mockListeners[1].onPlayerMoved).not.toHaveBeenCalled();
+      expect(mockListeners[2].onPlayerMoved).not.toHaveBeenCalled();
 
     });
     it.each(ConfigureTest('RLEDCN'))('should not notify removed listeners of player disconnections when destroySession is called [%s]', async (testConfiguration: string) => {
